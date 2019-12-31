@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // do nothing
                     } else {
-                        setUser(username);
+                        setUsername(username);
                     }
 
 
