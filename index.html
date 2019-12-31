@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+<!-- This is the main HTML file for the explorer -->
+<!-- ------------------------------------------>
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+    <!-- Link to style sheets -->
+
+</head>
+
+<body>
+
+    <form id="inputForm">
+        User: <select id="missionSelect">
+            <option>miniature-tiger</option>
+            <option>tiger-zaps</option>
+        </select>
+
+        <!-- input type="text" name="user" value="miniature-tiger"><br-->
+        Mission: <select id="missionSelect">
+            <option>snipes</option>
+            <option>targets</option>
+        </select>
+    </form>
+
+    <button onclick="runMission()">Run Mission</button>
+
+    <!-- A div used as a placeholder to which the dynamically generated board is added -->
+    <div class="output">
+    </div>
+
+    <!-- The main javascript file -->
+    <script src='main.js'></script>
+
+</body>
