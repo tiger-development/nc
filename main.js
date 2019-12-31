@@ -2,6 +2,17 @@
 window.addEventListener('load', (event) => {
   console.log('page is fully loaded');
   console.log(window.steem_keychain)
+  // Steem Keychain extension installed
+  if(window.steem_keychain) {
+      console.log('Keychain installed');
+      // Request handshake
+      steem_keychain.requestHandshake(function() {
+          console.log('Handshake received!');
+      });
+  // Steem Keychain extension not installed...
+  } else {
+      console.log('Keychain not installed');
+  }
 
 });
 
