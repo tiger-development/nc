@@ -3,7 +3,7 @@ let workFlowMonitor = true
 
 let outputNode = document.querySelector('div.output');
 
-steem_keychain.requestHandshake(function() {
+window.steem_keychain.requestHandshake(function() {
     console.log('Handshake received!');
 });
 
