@@ -4,8 +4,6 @@ let workFlowMonitor = true
 let outputNode = document.querySelector('div.output');
 
 // Steem Keychain extension installed
-console.log(steem_keychain)
-
 if(window.steem_keychain) {
     console.log('Keychain installed');
     // Request handshake
