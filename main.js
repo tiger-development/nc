@@ -3,6 +3,10 @@ let workFlowMonitor = true
 
 let outputNode = document.querySelector('div.output');
 
+steem_keychain.requestHandshake(function() {
+    console.log('Handshake received!');
+});
+
 console.log(window)
 
 // Steem Keychain extension installed
