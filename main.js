@@ -1,22 +1,33 @@
+let keychainFunctioning = false;
+
 // On page load
 window.addEventListener('load', (event) => {
-  console.log('page is fully loaded');
-  console.log(window.steem_keychain)
-  // Steem Keychain extension installed
-  if(window.steem_keychain) {
-      console.log('Keychain installed');
-      // Request handshake
-      steem_keychain.requestHandshake(function() {
-          console.log('Handshake received!');
-      });
-  // Steem Keychain extension not installed...
-  } else {
-      console.log('Keychain not installed');
-  }
+    console.log(window.steem_keychain)
+
+    // Steem Keychain extension installed
+    if(window.steem_keychain) {
+        console.log('Keychain installed');
+        // Request handshake
+        steem_keychain.requestHandshake(function() {
+            console.log('Handshake received!');
+            keychainFunctioning = true
+        });
+
+    // Steem Keychain extension not installed...
+    } else {
+        console.log('Keychain not installed');
+    }
 
 });
 
-/*
+
+
+
+
+
+
+
+
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,23 +49,30 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(keychain)
     }
 
-    // Steem Keychain extension installed
-    if(window.steem_keychain) {
-        console.log('Keychain installed');
-        // Request handshake
-        steem_keychain.requestHandshake(function() {
-            console.log('Handshake received!');
-        });
-    // Steem Keychain extension not installed...
-    } else {
-        console.log('Keychain not installed');
-    }
+    // When login button is clicked
+    loginButton.addEventListener('click', (e) => {
+            // Stop the default action from doing anything
+            e.preventDefault();
 
-    console.log(window.steem_keychain)
+            // Check window.steem_keychain exists
+            if (keychainFunctioning == true) {
+                // Get the value from the username field
+                const username = usernameField.value;
+
+                steem_keychain.requestSignBuffer(username, 'login', 'Posting', response => {
+                    console.log(response)
+                });
+
+            } else {
+                console.log('Keychain not installed');
+            }
+
+
+
+
+    });
 
 });
-*/
-
 
 
 
@@ -90,7 +108,6 @@ async function runMission() {
 }
 
 async function check(user) {
-    console.log(window.steem_keychain)
 
     // Steem Keychain extension installed
     if(window.steem_keychain) {
