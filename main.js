@@ -1,4 +1,5 @@
 // On page load
+/*
 document.addEventListener('DOMContentLoaded', () => {
 
     // Get the username input field
@@ -33,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log(window.steem_keychain)
 
 });
+*/
+
+
 
 
 
@@ -61,8 +65,14 @@ async function runMission() {
         targets(user)
     } else if (mission == "snipes") {
         snipes(user)
+    } else if (mission == "check") {
+        check(user)
     }
+}
 
+async function check(user) {
+    console.log(window)
+    console.log(window.steem_keychain)
 }
 
 
