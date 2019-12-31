@@ -39,6 +39,9 @@ function userLoggedIn() {
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Check on pageload if anyone is logged in
+    const username = userLoggedIn();
+
     // Get the username input field
     const usernameField = document.getElementById('username');
 
@@ -50,6 +53,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Get status output
     const status = document.getElementById('status');
+
+    // Is the user already logged in?
+    if (username) {
+        loginButton.style.display = 'none';
+        logoutButton.style.display = 'initial';
+        status.innerHTML = username + 'is logged in.';
+    } else {
+        loginButton.style.display = 'initial';
+        logoutButton.style.display = 'none';
+        status.innerHTML = 'You are not logged in.';
+    }
 
     if(window.steem_keychain) {
             let keychain = window.steem_keychain;
@@ -64,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Check window.steem_keychain exists
             if (keychainFunctioning == true) {
                 // Get the value from the username field
-                const username = usernameField.value;
+                username = usernameField.value;
 
                 steem_keychain.requestSignBuffer(username, 'login', 'Posting', response => {
                     console.log(response)
