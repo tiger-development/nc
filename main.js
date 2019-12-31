@@ -3,6 +3,8 @@ let workFlowMonitor = true
 
 let outputNode = document.querySelector('div.output');
 
+console.log(window)
+
 // Steem Keychain extension installed
 if(window.steem_keychain) {
     console.log('Keychain installed');
