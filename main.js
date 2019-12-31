@@ -25,8 +25,15 @@ window.addEventListener('load', (event) => {
 
 
 
+function setUser(user) {
+    localStorage.setItem('user', JSON.stringify(user));
+}
 
-
+function userLoggedIn() {
+    const value = localStorage.getItem('user');
+    console.log("value", value)
+    return value ? value : false;
+}
 
 
 
@@ -61,6 +68,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 steem_keychain.requestSignBuffer(username, 'login', 'Posting', response => {
                     console.log(response)
+                    console.log("userLoggedIn()", userLoggedIn())
+                    if (userLoggedIn()) {
+
+                        // do nothing
+                    } else {
+                        setUser(user);
+                    }
+
+
+
+
                 });
 
             } else {
