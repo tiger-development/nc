@@ -25,12 +25,12 @@ window.addEventListener('load', (event) => {
 
 
 
-function setUser(user) {
-    localStorage.setItem('user', JSON.stringify(user));
+function setUsername(username) {
+    localStorage.setItem('username', JSON.stringify(username));
 }
 
 function userLoggedIn() {
-    const value = localStorage.getItem('user');
+    const value = localStorage.getItem('username');
     console.log("value", value)
     return value ? value : false;
 }
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // do nothing
                     } else {
-                        setUser(user);
+                        setUser(username);
                     }
 
 
