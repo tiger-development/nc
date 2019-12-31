@@ -4,6 +4,9 @@ let workFlowMonitor = true
 let outputNode = document.querySelector('div.output');
 
 console.log(window)
+console.log(window.document.documentURI)
+console.log(window.screenY)
+console.log(window.missions)
 console.log(window.steem_keychain)
 
 // Steem Keychain extension installed
