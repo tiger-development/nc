@@ -1,26 +1,52 @@
+// On page load
+document.addEventListener('DOMContentLoaded', () => {
+
+    // Get the username input field
+    const usernameField = document.getElementById('username');
+
+    // Get login button
+    const loginButton = document.getElementById('login');
+
+    // Get logout button
+    const logoutButton = document.getElementById('logout');
+
+    // Get status output
+    const status = document.getElementById('status');
+
+    if(window.steem_keychain) {
+            let keychain = window.steem_keychain;
+            console.log(keychain)
+    }
+
+    // Steem Keychain extension installed
+    if(window.steem_keychain) {
+        console.log('Keychain installed');
+        // Request handshake
+        steem_keychain.requestHandshake(function() {
+            console.log('Handshake received!');
+        });
+    // Steem Keychain extension not installed...
+    } else {
+        console.log('Keychain not installed');
+    }
+
+    console.log(window.steem_keychain)
+
+});
+
+
+
 const launchTime = Date.now();
 let workFlowMonitor = true
 
 let outputNode = document.querySelector('div.output');
 
-console.log(JSON.parse(JSON.stringify(window)))
-console.log(window)
-console.log(window.document.documentURI)
-console.log(window.screenY)
-console.log(window.missions)
-console.log(window.steem_keychain)
+//console.log(window)
+//console.log(window.document.documentURI)
+//console.log(window.screenY)
+//console.log(window.missions)
+//console.log(window.steem_keychain)
 
-// Steem Keychain extension installed
-if(window.steem_keychain) {
-    console.log('Keychain installed');
-    // Request handshake
-    steem_keychain.requestHandshake(function() {
-        console.log('Handshake received!');
-    });
-// Steem Keychain extension not installed...
-} else {
-    console.log('Keychain not installed');
-}
 
 
 async function runMission() {
