@@ -196,9 +196,10 @@ async function runLoginMission(user, mission, outputNode) {
     } else if (mission == "build ships") {
         buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
     } else if (mission == "upgrade buildings") {
-        let buildingsToUpgrade = await findBuildingsToUpgrade(user, outputNode)
+        console.log("runLoginMission - upgrade buildings")
+        let buildingsTransactions = await findBuildingsToUpgrade(user, outputNode)
         //upgradeBuilding(user, "P-Z142YAEQFO0", "shieldgenerator")
-        processKeychainTransactions(user, buildingsToUpgrade)
+        processKeychainTransactions(user, buildingsTransactions)
         // buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
         //upgradeBuilding(user, planetId, buildingName)
 
@@ -213,8 +214,7 @@ async function runInfoMission(user, mission, outputNode) {
     } else if (mission == "snipes") {
         snipes(user,outputNode)
     } else if (mission == "buildings") {
-        let buildingsToUpgrade  = await findBuildingsToUpgrade(user, outputNode)
-        console.log(buildingsToUpgrade)
+        let buildingsTransactions  = await findBuildingsToUpgrade(user, outputNode)
     }
 }
 
@@ -567,6 +567,7 @@ async function findBuildingsToUpgrade(user, outputNode) {
     let planetResources = [];
     let buildingsData = [];
     let buildingsToUpgrade = [];
+    let buildingsTransactions = [];
 
     let dataPlanets = await getPlanetsOfUser(user);
     //console.dir(dataPlanets)
@@ -579,10 +580,16 @@ async function findBuildingsToUpgrade(user, outputNode) {
         planetResources[i] = await calculateCurrentResources(planetData[i])
         buildingsData[i] = await getBuildings(planet.id);
         buildingsToUpgrade[i] = await buildingsToUpgradeForPlanet(planet.id, planetResources[i], buildingsData[i], minimumRequiredSkillLevel)
+        for (const upgrade of buildingsToUpgrade[i]) {
+            outputNode.innerHTML += upgrade.type + " " + upgrade.planetId + " " + upgrade.name + " " + upgrade.current + "<br>"
+            buildingsTransactions.push(upgrade)
+        }
+
         i += 1
     }
 
-    return buildingsToUpgrade;
+    console.dir(buildingsTransactions)
+    return buildingsTransactions;
 }
 
 
@@ -626,11 +633,11 @@ function processKeychainTransactions(user, transactions) {
             setTimeout(function () {
                 if (transaction.type == "upgradeBuilding") {
                     console.log(user, transaction.planetId, transaction.name)
-                    //upgradeBuilding(user, transaction.planetId, transaction.name)
+                    upgradeBuilding(user, transaction.planetId, transaction.name)
                 } else if (transaction.type == "buildShip") {
                     buildShip(user, transaction.planetId, transaction.name)
                 }
-            }, 3000);
+            }, 1000);
         }
         i+=1;
     }
