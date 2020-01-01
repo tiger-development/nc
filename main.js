@@ -25,7 +25,7 @@ window.addEventListener('load', (event) => {
 
 
 
-function setUsername(username) {
+function setUser(username) {
     localStorage.setItem('username', JSON.stringify(username));
 }
 
@@ -35,6 +35,9 @@ function userLoggedIn() {
     return value ? value : false;
 }
 
+function logoutUser() {
+    localStorage.removeItem('username');
+}
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -87,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // do nothing
                     } else {
-                        setUsername(username);
+                        setUser(username);
                     }
 
 
@@ -103,6 +106,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     });
+
+    // When the logout button is clicked
+    logoutButton.addEventListener('click', (e) => {
+        // Stop the default action from doing anything
+        e.preventDefault();
+
+        logoutUser();
+
+        logoutButton.style.display = 'none';
+        loginButton.style.display = 'initial';
+    });
+
 
 });
 
