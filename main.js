@@ -177,6 +177,8 @@ async function runMission(user, mission) {
         snipes(user)
     } else if (mission == "check") {
         check(user)
+    } else if (mission == "build ships") {
+        buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
     }
 }
 
@@ -384,4 +386,29 @@ async function calculateCurrentResources(planet) {
 
 function updateResource(resource, rate, hours) {
     return (resource + (rate / 24) * hours).toFixed(2)
+}
+
+
+
+
+function buildShip(user, planetId, shipName) {
+    var scJson = {};
+    var scCommand = {};
+    // Create Command
+    scJson["username"] = user;
+    scJson["type"] = "buildship";
+    scCommand["tr_var1"] = planetId;
+    scCommand["tr_var2"] = shipName;
+
+    scJson["command"] = scCommand;
+    var finalJson = JSON.stringify(scJson);
+    var appId = this.appId();
+
+    keychainCustomJson(user, 'test', 'Posting', finalJson, 'displayName')
+}
+
+function keychainCustomJson() {
+    steem_keychain.requestCustomJson(account_name, custom_json_id, key_type, json, display_name, function(response) {
+        console.log(response);
+    });
 }
