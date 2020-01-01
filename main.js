@@ -29,6 +29,9 @@ function setUser(username) {
     localStorage.setItem('username', JSON.stringify(username));
 }
 
+
+
+
 function userLoggedIn() {
     const value = localStorage.getItem('username');
     console.log("value", value)
@@ -43,7 +46,7 @@ function logoutUser() {
 document.addEventListener('DOMContentLoaded', () => {
 
     // Check on pageload if anyone is logged in
-    const username = userLoggedIn();
+    let username = userLoggedIn();
 
     // Get the username input field
     const usernameField = document.getElementById('username');
@@ -59,19 +62,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Is the user already logged in?
     if (username) {
-        loginButton.style.display = 'none';
-        logoutButton.style.display = 'initial';
-        status.innerHTML = username + 'is logged in.';
+        loginDisplay(username)
     } else {
-        loginButton.style.display = 'initial';
-        logoutButton.style.display = 'none';
-        status.innerHTML = 'You are not logged in.';
+        logoutDisplay()
     }
 
     if(window.steem_keychain) {
             let keychain = window.steem_keychain;
             console.log(keychain)
     }
+
+    function loginDisplay(username) {
+        loginButton.style.display = 'none';
+        usernameField.style.display = 'none';
+        logoutButton.style.display = 'initial';
+        status.innerHTML = 'Logged in as .' + username;
+    }
+
+    function logoutDisplay() {
+        logoutButton.style.display = 'none';
+        loginButton.style.display = 'initial';
+        usernameField.style.display = 'initial';
+        status.innerHTML = 'You are not logged in.';
+    }
+
 
     // When login button is clicked
     loginButton.addEventListener('click', (e) => {
@@ -91,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         // do nothing
                     } else {
                         setUser(username);
+                        loginDisplay(username)
                     }
 
 
@@ -111,11 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutButton.addEventListener('click', (e) => {
         // Stop the default action from doing anything
         e.preventDefault();
-
         logoutUser();
-
-        logoutButton.style.display = 'none';
-        loginButton.style.display = 'initial';
+        logoutDisplay()
     });
 
 
