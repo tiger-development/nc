@@ -196,11 +196,11 @@ async function runLoginMission(user, mission) {
     } else if (mission == "build ships") {
         buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
     } else if (mission == "upgrade buildings") {
-        let buildingsToUpgrade  = await findBuildingsToUpgrade(user, outputNode)
-        upgradeBuilding(user, "P-Z142YAEQFO0", "shieldgenerator")
-
+        let buildingsToUpgrade = await findBuildingsToUpgrade(user, outputNode)
+        //upgradeBuilding(user, "P-Z142YAEQFO0", "shieldgenerator")
+        processKeychainTransactions(user, buildingsToUpgrade)
         // buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
-        // upgradeBuilding(user, planetId, buildingName)
+        //upgradeBuilding(user, planetId, buildingName)
 
     }
 }
@@ -489,7 +489,7 @@ async function buildingsToUpgradeForPlanet(planetId, resources, buildings, minim
                     let buildingInfo = {}
 
                     // Include name and current skill level
-                    buildingInfo.transaction = "upgradeBuilding"
+                    buildingInfo.type = "upgradeBuilding"
                     buildingInfo.planetId = planetId
                     buildingInfo.name = building.name
                     buildingInfo.current = building.current
@@ -618,6 +618,24 @@ function upgradeBuilding(user, planetId, buildingName) {
     keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
 
 }
+
+function processKeychainTransactions(user, transactions) {
+    let i=0;
+    for (const transaction of transactions) {
+        if (i<=3) {
+            setTimeout(function () {
+                if (transaction.type == "upgradeBuilding") {
+                    console.log(user, transaction.planetId, transaction.name)
+                    //upgradeBuilding(user, transaction.planetId, transaction.name)
+                } else if (transaction.type == "buildShip") {
+                    buildShip(user, transaction.planetId, transaction.name)
+                }
+            }, 3000);
+        }
+        i+=1;
+    }
+}
+
 
 
 function keychainCustomJson(account_name, custom_json_id, key_type, json, display_name) {
