@@ -348,6 +348,14 @@ async function getPlanetShips(user, planetID) {
     return data
 }
 
+
+async function getBuildings(planetID) {
+    let response = await fetch("https://api.nextcolony.io/loadbuildings?id=" + planetID);
+    let data = await response.json();
+    return data
+}
+
+
 async function getMissions(user, planetID, active) {
     let response = await fetch("https://api.nextcolony.io/loadfleetmission?user=" + user + "&active=" + active + "&planetid=" + planetID);
     let data = await response.json();
@@ -388,16 +396,25 @@ function updateResource(resource, rate, hours) {
     return (resource + (rate / 24) * hours).toFixed(2)
 }
 
+async function fetchBuildingsData(user) {
+    let dataPlanets = await getPlanetsOfUser(user);
+    let buildingsData = [];
 
-async function buildShips() {
+    let i = 0;
+    for (const planet of dataPlanets.planets) {
+        buildingsData[i] = await getBuildings(planet.id);
+    }
+    return buildingsData;
+}
 
-    let dataPlanets = await getPlanetsOfUser(user)
 
-    let buildingsData = []
+async function buildShips(user) {
+
+    let buildingsData = await fetchBuildingsData(user);
 
     let i = 0
     for (const planet of dataPlanets.planets) {
-        buildingsData[i] = await getMissions(user, planet.id)
+        buildingsData[i] = await getBuildings(planet.id)
 
         for (const mission of missionsData[i]) {
             let planet = mission.from_planet.name
@@ -428,7 +445,7 @@ function buildShip(user, planetId, shipName) {
     keychainCustomJson(user, 'test', 'Posting', finalJson, 'displayName')
 }
 
-function keychainCustomJson() {
+function keychainCustomJson(account_name, custom_json_id, key_type, json, display_name) {
     steem_keychain.requestCustomJson(account_name, custom_json_id, key_type, json, display_name, function(response) {
         console.log(response);
     });
