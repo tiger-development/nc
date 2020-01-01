@@ -442,7 +442,7 @@ function buildShip(user, planetId, shipName) {
     var finalJson = JSON.stringify(scJson);
     //var appId = this.appId();
 
-    keychainCustomJson(user, 'test', 'Posting', finalJson, 'displayName')
+    keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
 }
 
 function keychainCustomJson(account_name, custom_json_id, key_type, json, display_name) {
