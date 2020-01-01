@@ -63,7 +63,7 @@ window.addEventListener('load', (event) => {
             // Check window.steem_keychain exists
             if (keychainFunctioning == true) {
                 // Get the value from the username field
-                user = usernameSelect.value;
+                user = usernameSelect.value.slice(1,length(usernameSelect.value));
 
                 steem_keychain.requestSignBuffer(user, 'login', 'Posting', response => {
                     console.log(response)
