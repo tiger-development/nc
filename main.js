@@ -633,7 +633,11 @@ function upgradeBuilding(user, planetId, buildingName) {
 
 function processKeychainTransactions(user, transactions, maxProcess) {
 
-    if (maxProcess > 0) {
+    processKeychainTransactionWithDelay()
+
+    function processKeychainTransactionWithDelay() {
+        maxProcess-=1
+        console.log(maxProcess)
         let transaction = transactions.shift();
         if (transaction.type == "upgradeBuilding") {
             console.log(user, transaction.planetId, transaction.name)
@@ -642,7 +646,9 @@ function processKeychainTransactions(user, transactions, maxProcess) {
             buildShip(user, transaction.planetId, transaction.name)
         }
 
-        setTimeout(processKeychainTransactions(user, transactions, maxProcess-1), 3000);
+        if (maxProcess > 0) {
+            setTimeout(processKeychainTransactionWithDelay, 3000);
+        }    
     }
 }
 
