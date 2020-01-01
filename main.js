@@ -1,11 +1,28 @@
 let keychainFunctioning = false;
 
+
+
+
 // On page load
 window.addEventListener('load', (event) => {
+    // Temp
     console.log(window.steem_keychain)
 
-    // Steem Keychain extension installed
+    // Get the username input field
+    const usernameField = document.getElementById('usernameField');
+
+    // Get login button
+    const loginButton = document.getElementById('login');
+
+    // Get logout button
+    const logoutButton = document.getElementById('logout');
+
+    // Get status output
+    const status = document.getElementById('status');
+
+    // Check Steem Keychain extension installed and functioning
     if(window.steem_keychain) {
+        let keychain = window.steem_keychain;
         console.log('Keychain installed');
         // Request handshake
         steem_keychain.requestHandshake(function() {
@@ -18,47 +35,9 @@ window.addEventListener('load', (event) => {
         console.log('Keychain not installed');
     }
 
-});
 
-
-
-
-
-
-function setUser(username) {
-    localStorage.setItem('username', JSON.stringify(username));
-}
-
-
-
-
-function userLoggedIn() {
-    const value = localStorage.getItem('username');
-    console.log("value", value)
-    return value ? value : false;
-}
-
-function logoutUser() {
-    localStorage.removeItem('username');
-}
-
-
-document.addEventListener('DOMContentLoaded', () => {
-
-    // Check on pageload if anyone is logged in
+    // Check if anyone is logged in
     let username = userLoggedIn();
-
-    // Get the username input field
-    const usernameField = document.getElementById('username');
-
-    // Get login button
-    const loginButton = document.getElementById('login');
-
-    // Get logout button
-    const logoutButton = document.getElementById('logout');
-
-    // Get status output
-    const status = document.getElementById('status');
 
     // Is the user already logged in?
     if (username) {
@@ -66,26 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         logoutDisplay()
     }
-
-    if(window.steem_keychain) {
-            let keychain = window.steem_keychain;
-            console.log(keychain)
-    }
-
-    function loginDisplay(username) {
-        loginButton.style.display = 'none';
-        usernameField.style.display = 'none';
-        logoutButton.style.display = 'initial';
-        status.innerHTML = 'Logged in as .' + username;
-    }
-
-    function logoutDisplay() {
-        logoutButton.style.display = 'none';
-        loginButton.style.display = 'initial';
-        usernameField.style.display = 'initial';
-        status.innerHTML = 'You are not logged in.';
-    }
-
 
     // When login button is clicked
     loginButton.addEventListener('click', (e) => {
@@ -107,19 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         setUser(username);
                         loginDisplay(username)
                     }
-
-
-
-
                 });
-
             } else {
                 console.log('Keychain not installed');
             }
-
-
-
-
     });
 
     // When the logout button is clicked
@@ -129,6 +79,50 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutUser();
         logoutDisplay()
     });
+
+
+    function loginDisplay(username) {
+        loginButton.style.display = 'none';
+        usernameField.style.display = 'none';
+        logoutButton.style.display = 'initial';
+        status.innerHTML = 'Logged in as .' + username;
+    }
+
+    function logoutDisplay() {
+        logoutButton.style.display = 'none';
+        loginButton.style.display = 'initial';
+        usernameField.style.display = 'initial';
+        status.innerHTML = 'You are not logged in.';
+    }
+
+
+});
+
+
+
+
+// Login / logout functions
+// ------------------------
+
+// Check if user logged in
+function userLoggedIn() {
+    const value = localStorage.getItem('username');
+    return value ? value : false;
+}
+
+// Store username in local storage
+function setUser(username) {
+    localStorage.setItem('username', JSON.stringify(username));
+}
+
+// Remove username from local storage
+function logoutUser() {
+    localStorage.removeItem('username');
+}
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
 
 
 });
