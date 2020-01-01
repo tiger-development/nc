@@ -389,6 +389,27 @@ function updateResource(resource, rate, hours) {
 }
 
 
+async function buildShips() {
+
+    let dataPlanets = await getPlanetsOfUser(user)
+
+    let buildingsData = []
+
+    let i = 0
+    for (const planet of dataPlanets.planets) {
+        buildingsData[i] = await getMissions(user, planet.id)
+
+        for (const mission of missionsData[i]) {
+            let planet = mission.from_planet.name
+            let arrival = new Date(mission.arrival * 1000)
+            let cancelled = mission.cancel_trx
+            let type = mission.type
+            let result = mission.result
+        }
+        i += 1
+    }
+}
+
 
 
 function buildShip(user, planetId, shipName) {
@@ -402,7 +423,7 @@ function buildShip(user, planetId, shipName) {
 
     scJson["command"] = scCommand;
     var finalJson = JSON.stringify(scJson);
-    var appId = this.appId();
+    //var appId = this.appId();
 
     keychainCustomJson(user, 'test', 'Posting', finalJson, 'displayName')
 }
