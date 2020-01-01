@@ -107,7 +107,7 @@ window.addEventListener('load', (event) => {
         loginButton.style.display = 'none';
         usernameSelect.style.display = 'none';
         logoutButton.style.display = 'initial';
-        status.innerHTML = 'Logged in as .' + user;
+        status.innerHTML = 'Logged in as ' + user;
     }
 
     function logoutDisplay() {
