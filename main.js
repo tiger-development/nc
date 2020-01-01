@@ -73,7 +73,7 @@ window.addEventListener('load', (event) => {
             if (keychainFunctioning == true) {
 
                 steem_keychain.requestSignBuffer(userValue, 'login', 'Posting', response => {
-                    if (userLoggedIn()) {
+                    if (user && logInStatus == "keychain") {
                         // do nothing
                     } else {
                         user = setUser(userValue);
