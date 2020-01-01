@@ -9,7 +9,7 @@ window.addEventListener('load', (event) => {
     console.log(window.steem_keychain)
 
     // Get the username input field
-    const usernameField = document.getElementById('usernameField');
+    const usernameSelect = document.getElementById('usernameSelect');
 
     // Get login button
     const loginButton = document.getElementById('login');
@@ -19,6 +19,15 @@ window.addEventListener('load', (event) => {
 
     // Get status output
     const status = document.getElementById('status');
+
+    // Get mission button
+    const runMissionButton = document.getElementById('runMission');
+
+
+    var missionSelect = document.getElementById("missionSelect")
+
+    //let user = inputs.elements[0].value
+    //let mission = inputs.elements[0].value
 
     // Check Steem Keychain extension installed and functioning
     if(window.steem_keychain) {
@@ -37,11 +46,11 @@ window.addEventListener('load', (event) => {
 
 
     // Check if anyone is logged in
-    let username = userLoggedIn();
+    let user = userLoggedIn();
 
     // Is the user already logged in?
-    if (username) {
-        loginDisplay(username)
+    if (user) {
+        loginDisplay(user)
     } else {
         logoutDisplay()
     }
@@ -54,17 +63,17 @@ window.addEventListener('load', (event) => {
             // Check window.steem_keychain exists
             if (keychainFunctioning == true) {
                 // Get the value from the username field
-                username = usernameField.value;
+                user = usernameSelect.value;
 
-                steem_keychain.requestSignBuffer(username, 'login', 'Posting', response => {
+                steem_keychain.requestSignBuffer(user, 'login', 'Posting', response => {
                     console.log(response)
                     console.log("userLoggedIn()", userLoggedIn())
                     if (userLoggedIn()) {
 
                         // do nothing
                     } else {
-                        setUser(username);
-                        loginDisplay(username)
+                        setUser(user);
+                        loginDisplay(user)
                     }
                 });
             } else {
@@ -80,18 +89,32 @@ window.addEventListener('load', (event) => {
         logoutDisplay()
     });
 
+    runMissionButton.addEventListener('click', (e) => {
+        // Stop the default action from doing anything
+        e.preventDefault();
 
-    function loginDisplay(username) {
+        const mission = missionSelect.value;
+        if (user) {
+            runMission(user, mission);
+        } else {
+            console.log('User not logged in');
+        }
+    });
+
+
+    function loginDisplay(user) {
+        console.log("loginDisplay")
         loginButton.style.display = 'none';
-        usernameField.style.display = 'none';
+        usernameSelect.style.display = 'none';
         logoutButton.style.display = 'initial';
-        status.innerHTML = 'Logged in as .' + username;
+        status.innerHTML = 'Logged in as .' + user;
     }
 
     function logoutDisplay() {
+        console.log("logoutDisplay")
         logoutButton.style.display = 'none';
         loginButton.style.display = 'initial';
-        usernameField.style.display = 'initial';
+        usernameSelect.style.display = 'initial';
         status.innerHTML = 'You are not logged in.';
     }
 
@@ -106,18 +129,18 @@ window.addEventListener('load', (event) => {
 
 // Check if user logged in
 function userLoggedIn() {
-    const value = localStorage.getItem('username');
+    const value = localStorage.getItem('user');
     return value ? value : false;
 }
 
 // Store username in local storage
-function setUser(username) {
-    localStorage.setItem('username', JSON.stringify(username));
+function setUser(user) {
+    localStorage.setItem('user', JSON.stringify(user));
 }
 
 // Remove username from local storage
 function logoutUser() {
-    localStorage.removeItem('username');
+    localStorage.removeItem('user');
 }
 
 
@@ -143,13 +166,10 @@ let outputNode = document.querySelector('div.output');
 
 
 
-async function runMission() {
+async function runMission(user, mission) {
     outputNode.innerHTML = ""
 
-    var inputs = document.getElementById("inputForm")
 
-    let user = inputs.elements[0].value
-    let mission = inputs.elements[1].value
 
     if (mission == "targets") {
         targets(user)

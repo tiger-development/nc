@@ -15,33 +15,39 @@
     <div>Steem Keychain Login</div>
     <div>--------------------</div>
     <br>
-    <div id="status"><br>
+    <div id="status"><br></div>
     <br>
     <div>
-        @<input type="text" id="usernameField" placeholder="...Steem username...">
-        <button type="button" id="login">Login with Keychain</button>
-        <button type="button" id="logout">Logout</button>
-    </div>
-
-
-
-
-
-    <form id="inputForm">
-        User: <select id="userSelect">
+        @
+        <select id="usernameSelect">
             <option>miniature-tiger</option>
             <option>tiger-zaps</option>
         </select>
 
-        <!-- input type="text" name="user" value="miniature-tiger"><br-->
-        Mission: <select id="missionSelect">
-            <option>snipes</option>
-            <option>targets</option>
-            <option>check</option>
-        </select>
-    </form>
+    </div>
+    <!--
+    <input type="text" id="usernameField" placeholder="...Steem username...">
+    -->
 
-    <button onclick="runMission()">Run Mission</button>
+    <div>
+        <button type="button" id="login">Login with Keychain</button>
+    </div>
+    <div>
+        <button type="button" id="logout">Logout</button>
+    </div>
+
+    <br><br>
+
+
+
+    Mission: <select id="missionSelect">
+        <option>snipes</option>
+        <option>targets</option>
+        <option>check</option>
+    </select>
+
+
+    <button id="runMission">Run Mission</button>
 
     <!-- A div used as a placeholder to which the dynamically generated board is added -->
     <div class="output">
