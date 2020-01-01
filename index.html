@@ -35,19 +35,29 @@
     <br><br>
 
 
-
-    Mission: <select id="missionSelect">
-        <option>snipes</option>
-        <option>targets</option>
+    <div>
+        Missions requiring login:
+    </div>
+    <select id="loginMissionSelect">
         <option>build ships</option>
         <option>check</option>
     </select>
 
+    <button id="runLoginMission">Run Mission</button><br><br>
 
-    <button id="runMission">Run Mission</button>
+    <div>
+        Information missions:
+    </div>
+    <select id="infoMissionSelect">
+        <option>buildings</option>
+        <option>snipes</option>
+        <option>targets</option>
+    </select>
+
+    <button id="runInfoMission">Run Mission</button><br><br>
 
     <!-- A div used as a placeholder to which the dynamically generated board is added -->
-    <div class="output">
+    <div id="output">
     </div>
 
     <!-- The main javascript file -->

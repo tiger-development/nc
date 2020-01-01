@@ -20,11 +20,15 @@ window.addEventListener('load', (event) => {
     // Get status output
     const status = document.getElementById('status');
 
-    // Get mission button
-    const runMissionButton = document.getElementById('runMission');
+    // Get mission buttons
+    const runLoginMissionButton = document.getElementById('runLoginMission');
+    const runInfoMissionButton = document.getElementById('runInfoMission');
+
+    var loginMissionSelect = document.getElementById("loginMissionSelect")
+    var infoMissionSelect = document.getElementById("infoMissionSelect")
 
 
-    var missionSelect = document.getElementById("missionSelect")
+    const outputNode = document.getElementById('output');
 
     //let user = inputs.elements[0].value
     //let mission = inputs.elements[0].value
@@ -45,11 +49,13 @@ window.addEventListener('load', (event) => {
     }
 
 
-    // Check if anyone is logged in
-    let user = userLoggedIn();
+    // Check if anyone is already logged in or set for info
+    let user = getUser();
+    let logInStatus = getLogInStatus();
 
-    // Is the user already logged in?
-    if (user) {
+    if (user && logInStatus == "keychain") {
+        loginDisplay(user)
+    } else if (user && logInStatus == "setForInfo") {
         loginDisplay(user)
     } else {
         logoutDisplay()
@@ -60,24 +66,26 @@ window.addEventListener('load', (event) => {
             // Stop the default action from doing anything
             e.preventDefault();
 
+            // Get the value from the username field
+            userValue = usernameSelect.value.slice(1, usernameSelect.value.length);
+
             // Check window.steem_keychain exists
             if (keychainFunctioning == true) {
-                // Get the value from the username field
-                user = usernameSelect.value.slice(1, usernameSelect.value.length);
 
-                steem_keychain.requestSignBuffer(user, 'login', 'Posting', response => {
-                    console.log(response)
-                    console.log("userLoggedIn()", userLoggedIn())
+                steem_keychain.requestSignBuffer(userValue, 'login', 'Posting', response => {
                     if (userLoggedIn()) {
-
                         // do nothing
                     } else {
-                        setUser(user);
-                        loginDisplay(user)
+                        user = setUser(userValue);
+                        logInStatus = setLogInStatus("keychain")
+                        loginDisplay(userValue)
                     }
                 });
             } else {
                 console.log('Keychain not installed');
+                user = setUser(userValue);
+                logInStatus = setLogInStatus("setForInfo")
+                loginDisplay(userValue)
             }
     });
 
@@ -85,20 +93,35 @@ window.addEventListener('load', (event) => {
     logoutButton.addEventListener('click', (e) => {
         // Stop the default action from doing anything
         e.preventDefault();
+        user = false
+        logInStatus = false
         logoutUser();
         logoutDisplay()
     });
 
-    runMissionButton.addEventListener('click', (e) => {
+    runLoginMissionButton.addEventListener('click', (e) => {
         // Stop the default action from doing anything
         e.preventDefault();
 
-        const mission = missionSelect.value;
-        if (user) {
-            runMission(user, mission);
+        const mission = loginMissionSelect.value;
+        if (user && logInStatus == "keychain") {
+            runLoginMission(user, mission);
         } else {
-            console.log('User not logged in');
+            console.log('User not logged in with keychain.');
         }
+    });
+
+    runInfoMissionButton.addEventListener('click', (e) => {
+        // Stop the default action from doing anything
+        e.preventDefault();
+
+        const mission = infoMissionSelect.value;
+        if (user && logInStatus == "setForInfo") {
+            runInfoMission(user, mission, outputNode);
+        } else {
+            console.log('User not logged in for info.');
+        }
+
     });
 
 
@@ -127,28 +150,35 @@ window.addEventListener('load', (event) => {
 // Login / logout functions
 // ------------------------
 
+// Store username in local storage
+function setLogInStatus(loginStatus) {
+    localStorage.setItem('loginStatus', loginStatus);
+    return loginStatus
+}
+
 // Check if user logged in
-function userLoggedIn() {
-    const value = localStorage.getItem('user');
-    return value ? value : false;
+function getLogInStatus() {
+    const value = localStorage.getItem('loginStatus');
+    return (value !== null) ? value : false;
 }
 
 // Store username in local storage
 function setUser(user) {
-    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('user', user);
+    return user
+}
+
+function getUser() {
+    const value = localStorage.getItem('user');
+    return (value !== null) ? value : false;
 }
 
 // Remove username from local storage
 function logoutUser() {
+    localStorage.setItem('loginStatus', false);
     localStorage.removeItem('user');
 }
 
-
-
-document.addEventListener('DOMContentLoaded', () => {
-
-
-});
 
 
 
@@ -156,29 +186,35 @@ document.addEventListener('DOMContentLoaded', () => {
 const launchTime = Date.now();
 let workFlowMonitor = true
 
-let outputNode = document.querySelector('div.output');
-
-//console.log(window)
-//console.log(window.document.documentURI)
-//console.log(window.screenY)
-//console.log(window.missions)
-//console.log(window.steem_keychain)
 
 
-
-async function runMission(user, mission) {
+async function runLoginMission(user, mission) {
     outputNode.innerHTML = ""
 
-
-
-    if (mission == "targets") {
-        targets(user)
-    } else if (mission == "snipes") {
-        snipes(user)
-    } else if (mission == "check") {
+    if (mission == "check") {
         check(user)
     } else if (mission == "build ships") {
         buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
+    } else if (mission == "upgrade buildings") {
+        let buildingsToUpgrade  = await findBuildingsToUpgrade(user, outputNode)
+        upgradeBuilding(user, "P-Z142YAEQFO0", "shieldgenerator")
+
+        // buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
+        // upgradeBuilding(user, planetId, buildingName)
+
+    }
+}
+
+async function runInfoMission(user, mission, outputNode) {
+    outputNode.innerHTML = ""
+
+    if (mission == "targets") {
+        targets(user, outputNode)
+    } else if (mission == "snipes") {
+        snipes(user,outputNode)
+    } else if (mission == "buildings") {
+        let buildingsToUpgrade  = await findBuildingsToUpgrade(user, outputNode)
+        console.log(buildingsToUpgrade)
     }
 }
 
@@ -199,7 +235,7 @@ async function check(user) {
 }
 
 
-async function snipes(user) {
+async function snipes(user, outputNode) {
     outputNode.innerHTML += "<br>"
     outputNode.innerHTML += "Explorer Missions And Snipes <br>"
     outputNode.innerHTML += "Time now: " + new Date(launchTime) + "<br>"
@@ -286,7 +322,7 @@ async function missions(user) {
 
 
 
-async function targets(user) {
+async function targets(user, outputNode) {
     let targetAccounts = []
     if (user == "miniature-tiger") {
         targetAccounts = ['loliver', 'aniestudio', 'xunityx', 'giornalista', 'elprutest', 'z3ll', 'mcoinz79']
@@ -295,12 +331,11 @@ async function targets(user) {
     }
 
     for (const target of targetAccounts) {
-        await checkPotentialForAttack(target)
+        await checkPotentialForAttack(target, outputNode)
     }
 }
 
-async function checkPotentialForAttack(target) {
-    let outputNode = document.querySelector('div.output');
+async function checkPotentialForAttack(target, outputNode) {
     outputNode.innerHTML += "<br>" + target + "<br>"
     let dataPlanets = await getPlanetsOfUser(target)
 
@@ -407,26 +442,148 @@ async function fetchBuildingsData(user) {
     return buildingsData;
 }
 
+async function buildingsToUpgradeForPlanet(planetId, resources, buildings, minimumRequiredSkillLevel) {
 
-async function buildShips(user) {
+    let scarceResource = findScarceResource(resources);
+    let remainingResources = resources;
 
-    let buildingsData = await fetchBuildingsData(user);
+    //for (const building of buildings) {
+    //    console.log(building.name, building[scarceResource])
+    //}
 
-    let i = 0
-    for (const planet of dataPlanets.planets) {
-        buildingsData[i] = await getBuildings(planet.id)
 
-        for (const mission of missionsData[i]) {
-            let planet = mission.from_planet.name
-            let arrival = new Date(mission.arrival * 1000)
-            let cancelled = mission.cancel_trx
-            let type = mission.type
-            let result = mission.result
+    buildings.sort((a, b) => a[scarceResource] - b[scarceResource]);
+
+    //for (const building of buildings) {
+    //    console.log(building.name, building[scarceResource])
+    //}
+
+
+    let buildingsToUpgrade = [];
+
+    let sufficient = true;
+
+    for (const building of buildings) {
+        if (sufficient == true) {
+
+            // Check if building already being updated
+            let busy = checkIfBuildingBusy(launchTime, building.busy)
+
+            // Check if skill level greater than current level
+            let nextSkill = checkIfNextSkillCompleted(building.current, building.skill)
+
+            // Check if current skill below minimum required
+            let upgradeRequired = false
+            if (building.current < minimumRequiredSkillLevel) {
+                upgradeRequired = true
+            }
+
+            if (busy == false && nextSkill == true && upgradeRequired == true) {
+                let newRemainingResources = remainingResources;
+                // Check if sufficient resources for upgrade
+                sufficient = checkIfSufficientResources(building, remainingResources)
+
+                if (sufficient == true) {
+                    remainingResources = deductCosts(building, remainingResources)
+
+                    let buildingInfo = {}
+
+                    // Include name and current skill level
+                    buildingInfo.transaction = "upgradeBuilding"
+                    buildingInfo.planetId = planetId
+                    buildingInfo.name = building.name
+                    buildingInfo.current = building.current
+
+                    // Include costs to update
+                    //buildingInfo.coal = building.coal
+                    //buildingInfo.ore = building.ore
+                    //buildingInfo.copper = building.copper
+                    //buildingInfo.uranium = building.uranium
+
+                    buildingsToUpgrade.push(buildingInfo);
+                }
+            }
         }
-        i += 1
+    }
+
+    return buildingsToUpgrade;
+}
+
+function deductCosts(building, remainingResources) {
+    resourceTypes = ["coal", "ore", "copper", "uranium"]
+    for (const resourceType of resourceTypes) {
+        remainingResources[resourceType] = remainingResources[resourceType] - building[resourceType];
+    }
+    return remainingResources;
+}
+
+function checkIfSufficientResources(building, remainingResources) {
+    let sufficient = true;
+    resourceTypes = ["coal", "ore", "copper", "uranium"]
+
+    for (const resourceType of resourceTypes) {
+        if (remainingResources[resourceType] - building[resourceType] < 0) {
+            sufficient = false;
+        }
+    }
+
+    return sufficient;
+}
+
+function findScarceResource(resources) {
+    resources.coal = resources.coal / 8
+    resources.ore = resources.ore / 4
+    resources.copper = resources.copper / 2
+    resources.uranium = resources.uranium
+    let resourceArray = Object.values(resources);
+    let scarceResourceValue = Math.min(...resourceArray);
+    let scarceResource = Object.keys(resources).find(key => resources[key] === scarceResourceValue)
+    return scarceResource
+}
+
+function checkIfBuildingBusy(launchTime, busyTime) {
+    if (busyTime - launchTime/1000 > 0) {
+        return true;
+    } else {
+        return false;
     }
 }
 
+function checkIfNextSkillCompleted(current, skill) {
+    if (skill > current) {
+        return true
+    } else {
+        return false
+    }
+}
+
+
+async function findBuildingsToUpgrade(user, outputNode) {
+
+    console.log("buildingsInfo")
+    let minimumRequiredSkillLevel = 18;
+
+    let planetData = [];
+    let planetResources = [];
+    let buildingsData = [];
+    let buildingsToUpgrade = [];
+
+    let dataPlanets = await getPlanetsOfUser(user);
+    //console.dir(dataPlanets)
+
+
+
+    let i = 0;
+    for (const planet of dataPlanets.planets) {
+        planetData[i] = await getPlanetResources(planet.id)
+        planetResources[i] = await calculateCurrentResources(planetData[i])
+        buildingsData[i] = await getBuildings(planet.id);
+        buildingsToUpgrade[i] = await buildingsToUpgradeForPlanet(planet.id, planetResources[i], buildingsData[i], minimumRequiredSkillLevel)
+        i += 1
+    }
+
+    return buildingsToUpgrade;
+}
 
 
 function buildShip(user, planetId, shipName) {
@@ -444,6 +601,24 @@ function buildShip(user, planetId, shipName) {
 
     keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
 }
+
+function upgradeBuilding(user, planetId, buildingName) {
+    var scJson = {};
+    var scCommand = {};
+    // Create Command
+    scJson["username"] = user;
+    scJson["type"] = "upgrade";
+    scCommand["tr_var1"] = planetId;
+    scCommand["tr_var2"] = buildingName;
+
+    scJson["command"] = scCommand;
+    var finalJson = JSON.stringify(scJson);
+    //var appId = this.appId();
+
+    keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
+
+}
+
 
 function keychainCustomJson(account_name, custom_json_id, key_type, json, display_name) {
     steem_keychain.requestCustomJson(account_name, custom_json_id, key_type, json, display_name, function(response) {
