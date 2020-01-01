@@ -105,7 +105,7 @@ window.addEventListener('load', (event) => {
 
         const mission = loginMissionSelect.value;
         if (user && logInStatus == "keychain") {
-            runLoginMission(user, mission);
+            runLoginMission(user, mission, outputNode);
         } else {
             console.log('User not logged in with keychain.');
         }
@@ -188,7 +188,7 @@ let workFlowMonitor = true
 
 
 
-async function runLoginMission(user, mission) {
+async function runLoginMission(user, mission, outputNode) {
     outputNode.innerHTML = ""
 
     if (mission == "check") {
