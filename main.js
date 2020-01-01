@@ -27,6 +27,7 @@ window.addEventListener('load', (event) => {
     var loginMissionSelect = document.getElementById("loginMissionSelect")
     var infoMissionSelect = document.getElementById("infoMissionSelect")
 
+    const maxProcessField = document.getElementById("numberOfTransactions")
 
     const outputNode = document.getElementById('output');
 
@@ -104,8 +105,10 @@ window.addEventListener('load', (event) => {
         e.preventDefault();
 
         const mission = loginMissionSelect.value;
+        const maxProcess = maxProcessField.value;
+
         if (user && logInStatus == "keychain") {
-            runLoginMission(user, mission, outputNode);
+            runLoginMission(user, mission, maxProcess, outputNode);
         } else {
             console.log('User not logged in with keychain.');
         }
@@ -188,7 +191,7 @@ let workFlowMonitor = true
 
 
 
-async function runLoginMission(user, mission, outputNode) {
+async function runLoginMission(user, mission, maxProcess, outputNode) {
     outputNode.innerHTML = ""
 
     if (mission == "check") {
@@ -199,7 +202,7 @@ async function runLoginMission(user, mission, outputNode) {
         console.log("runLoginMission - upgrade buildings")
         let buildingsTransactions = await findBuildingsToUpgrade(user, outputNode)
         //upgradeBuilding(user, "P-Z142YAEQFO0", "shieldgenerator")
-        processKeychainTransactions(user, buildingsTransactions)
+        processKeychainTransactions(user, buildingsTransactions, maxProcess);
         // buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
         //upgradeBuilding(user, planetId, buildingName)
 
@@ -626,10 +629,10 @@ function upgradeBuilding(user, planetId, buildingName) {
 
 }
 
-function processKeychainTransactions(user, transactions) {
+function processKeychainTransactions(user, transactions, maxProcess) {
     let i=0;
     for (const transaction of transactions) {
-        if (i<=3) {
+        if (i<=maxProcess) {
             setTimeout(function () {
                 if (transaction.type == "upgradeBuilding") {
                     console.log(user, transaction.planetId, transaction.name)
