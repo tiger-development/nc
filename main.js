@@ -638,7 +638,7 @@ function processKeychainTransactions(user, transactions, maxProcess) {
 
     function processKeychainTransactionWithDelay() {
         transactionsToProcess-=1
-        console.log(maxProcess)
+        console.log(transactionsToProcess)
         let transaction = transactions.shift();
         if (transaction.type == "upgradeBuilding") {
             console.log(user, transaction.planetId, transaction.name)
