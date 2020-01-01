@@ -629,22 +629,23 @@ function upgradeBuilding(user, planetId, buildingName) {
 
 }
 
+
+
 function processKeychainTransactions(user, transactions, maxProcess) {
-    let i=0;
-    for (const transaction of transactions) {
-        if (i<=maxProcess) {
-            setTimeout(function () {
-                if (transaction.type == "upgradeBuilding") {
-                    console.log(user, transaction.planetId, transaction.name)
-                    upgradeBuilding(user, transaction.planetId, transaction.name)
-                } else if (transaction.type == "buildShip") {
-                    buildShip(user, transaction.planetId, transaction.name)
-                }
-            }, 1000);
+
+    if (maxProcess > 0) {
+        let transaction = transactions.shift();
+        if (transaction.type == "upgradeBuilding") {
+            console.log(user, transaction.planetId, transaction.name)
+            upgradeBuilding(user, transaction.planetId, transaction.name)
+        } else if (transaction.type == "buildShip") {
+            buildShip(user, transaction.planetId, transaction.name)
         }
-        i+=1;
+
+        setTimeout(processKeychainTransactions(user, transactions, maxProcess-1), 3000);
     }
 }
+
 
 
 
