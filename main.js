@@ -197,7 +197,11 @@ async function runLoginMission(user, mission, maxProcess, outputNode) {
     if (mission == "check") {
         check(user)
     } else if (mission == "build ships") {
-        buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
+        console.log("runLoginMission - build ships")
+        //buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
+        let buildShipTransactions = await findShipsToBuild(user, outputNode)
+        processKeychainTransactions(user, buildShipTransactions, maxProcess);
+
     } else if (mission == "upgrade buildings") {
         console.log("runLoginMission - upgrade buildings")
         let buildingsTransactions = await findBuildingsToUpgrade(user, outputNode)
@@ -218,6 +222,8 @@ async function runInfoMission(user, mission, outputNode) {
         snipes(user,outputNode)
     } else if (mission == "buildings") {
         let buildingsTransactions  = await findBuildingsToUpgrade(user, outputNode)
+    } else if (mission == "ships") {
+        let buildShipTransactions = await findShipsToBuild(user, outputNode)
     }
 }
 
@@ -368,6 +374,12 @@ async function getPlanetsOfUser(user) {
     return data
 }
 
+async function getPlanetShipyard(user, planetId) {
+    let response = await fetch("https://api.nextcolony.io/planetshipyard?user=" + user + "&planet=" + planetId);
+    let data = await response.json();
+    return data
+}
+
 async function getPlanetResources(planetID) {
     let response = await fetch("https://api.nextcolony.io/loadqyt?id=" + planetID);
     let data = await response.json();
@@ -445,16 +457,51 @@ async function fetchBuildingsData(user) {
     return buildingsData;
 }
 
+async function shipsToUpgradeForPlanet(planetId, resources, shipyard, shipPriority) {
+    //let scarceResource = findScarceResource(JSON.parse(JSON.stringify(resources)));
+    let remainingResources = JSON.parse(JSON.stringify(resources));
+
+    let shipyardActivated = shipyard.filter(ship => ship.activated === true);
+    //console.dir(shipyardActivated)
+    let shipyardPriorityOnly = shipyardActivated.filter(ship => shipHasPriority(ship.type, shipPriority) === true);
+    //console.dir(shipyardPriorityOnly)
+
+    let shipyardWithPriority = shipyardPriorityOnly.map(ship => ({...ship, priority: shipPriority[ship.type]}))
+    //console.dir(shipyardWithPriority)
+
+    let shipyardWithSkills = shipyardWithPriority.filter(ship => shipHasSkills(ship) === true)
+
+    let shipyardAvailableToBuild = shipyardWithSkills.filter(ship => shipbuildingBusy(launchTime, ship.busy_until) === false);
+
+    shipyardAvailableToBuild.sort((a, b) => b.priority - a.priority);
+    //console.dir(shipyardAvailableToBuild)
+
+    let shipsToUpgrade = [];
+
+    for (const ship of shipyardAvailableToBuild) {
+         if (checkIfSufficientResourcesForShip(ship, remainingResources) === true) {
+              remainingResources = deductCostsForShip(ship, remainingResources)
+
+              // Create ship transaction and push to transaction list
+              let shipInfo = {}
+              shipInfo.type = "buildShip"
+              shipInfo.planetId = planetId
+              shipInfo.name = ship.type
+              shipsToUpgrade.push(shipInfo);
+         }
+
+    }
+
+    //console.log(shipsToUpgrade)
+    return shipsToUpgrade;
+}
+
 async function buildingsToUpgradeForPlanet(planetId, resources, buildings, minimumRequiredSkillLevel) {
-    //console.log(planetId)
-    //console.log(resources)
+
     let scarceResource = findScarceResource(JSON.parse(JSON.stringify(resources)));
     let remainingResources = JSON.parse(JSON.stringify(resources));
 
     buildings.sort((a, b) => a[scarceResource] - b[scarceResource]);
-
-
-
 
     let buildingsToUpgrade = [];
 
@@ -516,6 +563,14 @@ function deductCosts(building, remainingResources) {
     return remainingResources;
 }
 
+function deductCostsForShip(ship, remainingResources) {
+    resourceTypes = ["coal", "ore", "copper", "uranium"]
+    for (const resourceType of resourceTypes) {
+        remainingResources[resourceType] = remainingResources[resourceType] - ship.costs[resourceType];
+    }
+    return remainingResources;
+}
+
 function checkIfSufficientResources(building, remainingResources) {
     let sufficient = true;
     resourceTypes = ["coal", "ore", "copper", "uranium"]
@@ -528,6 +583,19 @@ function checkIfSufficientResources(building, remainingResources) {
 
     return sufficient;
 }
+
+function checkIfSufficientResourcesForShip(ship, remainingResources) {
+    let result = true;
+    resourceTypes = ["coal", "ore", "copper", "uranium"]
+
+    for (const resourceType of resourceTypes) {
+        if (remainingResources[resourceType] - ship.costs[resourceType] < 0) {
+            result = false;
+        }
+    }
+    return result;
+}
+
 
 function findScarceResource(resources) {
     resources.coal = resources.coal / 8
@@ -547,6 +615,39 @@ function checkIfBuildingBusy(launchTime, busyTime) {
         return false;
     }
 }
+
+function shipHasPriority(type, shipPriority) {
+    if (shipPriority[type] == undefined) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+function shipHasSkills(ship) {
+    let result = true;
+
+    // Check if ship skill completed - cannot build unless at 20
+    if (ship.shipyard_skill != 20) {
+        result = false;
+    }
+
+    // Check if shipyard at required skill level - cannot build ship otherwise
+    if (ship.shipyard_level < ship.shipyard_min_level) {
+        result = false;
+    }
+
+    return result;
+}
+
+function shipbuildingBusy(launchTime, busyUntil) {
+    if (busyUntil === null || busyUntil - launchTime/1000 < 0) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
 
 function checkIfNextSkillCompleted(current, skill) {
     if (skill > current) {
@@ -590,6 +691,90 @@ async function findBuildingsToUpgrade(user, outputNode) {
     console.dir(buildingsTransactions)
     return buildingsTransactions;
 }
+
+async function findShipsToBuild(user, outputNode) {
+    /*
+    let shipPriority2 = {
+        scout: 0,
+        patrol: 0,
+        cutter: 0,
+        corvette: 63,
+        frigate: 64,
+        destroyer: 65,
+        cruiser: 66,
+        battlecruiser: 67,
+        carrier: 68,
+        transporter: 0,
+        dreadnought: 69,
+        explorer: 0,
+        scout2: 0,
+        patrol2: 0,
+        cutter2: 82,
+        corvette2: 83,
+        frigate2: 84,
+        destroyer2: 85,
+        cruiser2: 86,
+        battlecruiser2: 87,
+        carrier2: 88,
+        transporter2: 89,
+        dreadnought2: 90,
+        explorer2: 99
+    }
+    */
+
+    let shipPriority = {
+        corvette: 63,
+        frigate: 64,
+        destroyer: 65,
+        cruiser: 66,
+        battlecruiser: 67,
+        carrier: 68,
+        dreadnought: 69,
+        cutter2: 82,
+        corvette2: 83,
+        frigate2: 84,
+        destroyer2: 85,
+        cruiser2: 86,
+        battlecruiser2: 87,
+        carrier2: 88,
+        transportship2: 89,
+        dreadnought2: 90,
+        explorer2: 99
+    }
+
+    let planetData = [];
+    let planetResources = [];
+    let shipyardData = [];
+    let shipsToUpgrade = [];
+    let shipsTransactions = [];
+
+    let dataPlanets = await getPlanetsOfUser(user);
+
+    let i = 0;
+    for (const planet of dataPlanets.planets) {
+        //if (planet.name === "Apeiron-61" || planet.name === "Delta") {
+        planetData[i] = await getPlanetResources(planet.id)
+        planetResources[i] = await calculateCurrentResources(planetData[i])
+        shipyardData[i] = await getPlanetShipyard(user, planet.id)
+        shipsToUpgrade[i] = await shipsToUpgradeForPlanet(planet.id, planetResources[i], shipyardData[i], shipPriority)
+        //console.dir(planet)
+        //console.log(planet.id, planet.name)
+        //}
+        //buildingsToUpgrade[i] = await buildingsToUpgradeForPlanet(planet.id, planetResources[i], buildingsData[i], minimumRequiredSkillLevel)
+        //for (const upgrade of buildingsToUpgrade[i]) {
+        //    outputNode.innerHTML += upgrade.type + " " + upgrade.planetId + " " + upgrade.name + " " + upgrade.current + "<br>"
+        //    buildingsTransactions.push(upgrade)
+        //}
+        for (const upgrade of shipsToUpgrade[i]) {
+            outputNode.innerHTML += upgrade.type + " " + upgrade.planetId + " " + upgrade.name + "<br>"
+            shipsTransactions.push(upgrade)
+        }
+        i += 1
+    }
+
+    return shipsTransactions;
+}
+
 
 
 function buildShip(user, planetId, shipName) {
