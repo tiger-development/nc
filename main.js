@@ -818,6 +818,8 @@ function processKeychainTransactions(user, transactions, maxProcess) {
 
     if (transactionsToProcess > 0) {
         processKeychainTransactionWithDelay()
+    } else {
+        console.log("No transactions to process.")
     }
 
     function processKeychainTransactionWithDelay() {
@@ -833,6 +835,8 @@ function processKeychainTransactions(user, transactions, maxProcess) {
 
         if (transactionsToProcess > 0) {
             setTimeout(processKeychainTransactionWithDelay, 1000);
+        } else {
+            console.log("Transactions complete")
         }
     }
 }
