@@ -630,7 +630,10 @@ function upgradeBuilding(user, planetId, buildingName) {
 function processKeychainTransactions(user, transactions, maxProcess) {
 
     let transactionsToProcess = Math.min(maxProcess, transactions.length)
-    processKeychainTransactionWithDelay()
+
+    if (transactionsToProcess > 0) {
+        processKeychainTransactionWithDelay()
+    }
 
     function processKeychainTransactionWithDelay() {
         transactionsToProcess-=1
