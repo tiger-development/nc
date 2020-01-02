@@ -446,20 +446,14 @@ async function fetchBuildingsData(user) {
 }
 
 async function buildingsToUpgradeForPlanet(planetId, resources, buildings, minimumRequiredSkillLevel) {
-
-    let scarceResource = findScarceResource(resources);
-    let remainingResources = resources;
-
-    //for (const building of buildings) {
-    //    console.log(building.name, building[scarceResource])
-    //}
-
+    //console.log(planetId)
+    //console.log(resources)
+    let scarceResource = findScarceResource(JSON.parse(JSON.stringify(resources)));
+    let remainingResources = JSON.parse(JSON.stringify(resources));
 
     buildings.sort((a, b) => a[scarceResource] - b[scarceResource]);
 
-    //for (const building of buildings) {
-    //    console.log(building.name, building[scarceResource])
-    //}
+
 
 
     let buildingsToUpgrade = [];
@@ -468,7 +462,7 @@ async function buildingsToUpgradeForPlanet(planetId, resources, buildings, minim
 
     for (const building of buildings) {
         if (sufficient == true) {
-
+            //console.log(remainingResources)
             // Check if building already being updated
             let busy = checkIfBuildingBusy(launchTime, building.busy)
 
@@ -481,11 +475,13 @@ async function buildingsToUpgradeForPlanet(planetId, resources, buildings, minim
                 upgradeRequired = true
             }
 
+            //console.log(building.name, "busy", busy, "nextSkill", nextSkill, "upgradeRequired", upgradeRequired)
+
             if (busy == false && nextSkill == true && upgradeRequired == true) {
                 let newRemainingResources = remainingResources;
                 // Check if sufficient resources for upgrade
                 sufficient = checkIfSufficientResources(building, remainingResources)
-
+                //console.log("sufficient", sufficient)
                 if (sufficient == true) {
                     remainingResources = deductCosts(building, remainingResources)
 
