@@ -820,16 +820,12 @@ async function findShipsToBuild(user, outputNode) {
 
 async function findExplorationTransactions(user, outputNode) {
 
-  let planetPriority = [
-      {user: "miniature-tiger", planets: ["P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-Z7M914SV034", "P-ZUEF2H4ZVFK", "P-ZSHCI4Y9BBK", "P-Z6NP7GS7LN4", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
-      {user: "tiger-zaps", planets: ["P-ZZA367LJYRK"], planetNames: []},
-  ]
-    /*
     let planetPriority = [
         {user: "miniature-tiger", planets: ["P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-Z7M914SV034", "P-ZUEF2H4ZVFK", "P-ZSHCI4Y9BBK", "P-Z6NP7GS7LN4", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
         {user: "tiger-zaps", planets: ["P-ZS3RWN9D840", "P-ZXPZG03WPXC", "P-ZZA367LJYRK", "P-ZSJR1UCWGJK", "P-ZL1K8I8Y86O", "P-Z2A6EKIIC00", "P-ZKNJOCNKC0W", "P-Z142YAEQFO0", "P-ZE8TH46FVK0"], planetNames: []},
+        //{user: "tiger-zaps", planets: ["P-ZZA367LJYRK"], planetNames: []},
     ]
-    */
+
 
     let maxArea = 18;
     let userAvailableMissions = 0;
@@ -845,7 +841,7 @@ async function findExplorationTransactions(user, outputNode) {
     let explorationTransactions = [];
 
     let dataPlanets = await getPlanetsOfUser(user);
-    console.dir(dataPlanets)
+    //console.dir(dataPlanets)
     let priorityPlanetIndex = planetPriority.findIndex(entry => entry.user == user)
     let userPriorityPlanets = planetPriority[priorityPlanetIndex].planets;
 
@@ -858,22 +854,18 @@ async function findExplorationTransactions(user, outputNode) {
         let planetCoords = [dataPlanet.posx, dataPlanet.posy];
 
 
-
-
         planetFleetInfo[i] = await getPlanetFleet(user, priorityPlanet)
         let explorerFleetIndex = planetFleetInfo[i].findIndex(fleet => fleet.type == "explorership");
         let explorersAvailable = 0;
         if (explorerFleetIndex != -1) {
             explorersAvailable = planetFleetInfo[i][explorerFleetIndex].quantity;
         }
-        console.dir(planetFleetInfo[i])
-        console.log(explorerFleetIndex, explorersAvailable)
+        //console.dir(planetFleetInfo[i])
 
         planetMissionInfo[i] = await getPlanetMissionInfo(user, priorityPlanet);
-        console.dir(planetMissionInfo[i])
+        //console.dir(planetMissionInfo[i])
         let availableMissions = planetMissionInfo[i].planet_unused;
         let availableExplorerMissions = Math.min(availableMissions, explorersAvailable);
-        console.log(availableMissions)
 
         if (i==0) {
             userAvailableMissions = planetMissionInfo[i].user_unused;
@@ -886,7 +878,7 @@ async function findExplorationTransactions(user, outputNode) {
         outputNode.innerHTML += "available missions: " + availableMissions + " available explorers: " + explorersAvailable + ".<br>";
 
         galaxyData[i] = await getGalaxy(planetCoords[0], planetCoords[1], maxArea, maxArea);
-        console.dir(galaxyData[i])
+        //console.dir(galaxyData[i])
         space[i] = [];
         let xmin = galaxyData[i].area.xmin;
         let xmax = galaxyData[i].area.xmax;
@@ -944,12 +936,12 @@ async function findExplorationTransactions(user, outputNode) {
         }
 
         explorationTransactions.slice(0, userAvailableMissions);
-        console.dir(explorationTransactions);
 
         i+=1;
     }
 
     explorationTransactions.slice(0, userAvailableMissions);
+    console.dir(explorationTransactions);
     return explorationTransactions;
 
 }
