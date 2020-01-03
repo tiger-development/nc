@@ -896,15 +896,19 @@ async function findExplorationTransactions(user, outputNode) {
                 }
 
                 let explorations = galaxyData[i].explore.filter(entry => entry.x == x && entry.y == y)
+                spaceInfo["underSearch"] = false;
                 if (explorations.length > 0) {
                     spaceInfo["exploration"] = true;
-                    //let k=0;
-                    //for (const exploration of explorations) {
+                    let k=0;
+                    for (const exploration of explorations) {
+                    if (exploration.user == user) {
+                        spaceInfo["underSearch"] = true;
+                    }
                     //let spaceCoords = [mission.end_x, mission.end_y]
                     //let missionDistance = distance(planetCoords, spaceCoords)
 
-                    //    k+=1;
-                    //}
+                        k+=1;
+                    }
                 } else {
                     spaceInfo["exploration"] = false;
                 }
@@ -916,7 +920,9 @@ async function findExplorationTransactions(user, outputNode) {
             }
         }
         //console.log(space[i])
-        proposedExplorations[i] = space[i].filter(space => space.explored == false)
+        proposedExplorations[i] = space[i].filter(space => space.explored == false);
+        //console.log(proposedExplorations[i])
+        proposedExplorations[i] = proposedExplorations[i].filter(space => space.underSearch == false);
         //console.log(proposedExplorations[i])
         proposedExplorations[i].sort((a, b) => a.distance - b.distance);
         //console.log(proposedExplorations[i])
@@ -935,12 +941,10 @@ async function findExplorationTransactions(user, outputNode) {
             outputNode.innerHTML += exploration.type + " " + exploration.x + " " + exploration.y + " " + exploration.shipName + " " + proposal.distance + "<br>";
         }
 
-        explorationTransactions.slice(0, userAvailableMissions);
-
         i+=1;
     }
 
-    explorationTransactions.slice(0, userAvailableMissions);
+    explorationTransactions = explorationTransactions.slice(0, userAvailableMissions);
     console.dir(explorationTransactions);
     return explorationTransactions;
 
