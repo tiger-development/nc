@@ -946,15 +946,11 @@ async function findExplorationTransactions(user, outputNode) {
         explorationTransactions.slice(0, userAvailableMissions);
         console.dir(explorationTransactions);
 
-
-
-
-
-
         i+=1;
     }
 
-
+    explorationTransactions.slice(0, userAvailableMissions);
+    return explorationTransactions;
 
 }
 
