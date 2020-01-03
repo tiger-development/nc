@@ -119,7 +119,7 @@ window.addEventListener('load', (event) => {
         e.preventDefault();
 
         const mission = infoMissionSelect.value;
-        if (user && logInStatus == "setForInfo") {
+        if (user && (logInStatus == "setForInfo" || logInStatus == "keychain")) {
             runInfoMission(user, mission, outputNode);
         } else {
             console.log('User not logged in for info.');
