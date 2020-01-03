@@ -827,7 +827,7 @@ async function findExplorationTransactions(user, outputNode) {
     ]
 
 
-    let maxArea = 18;
+    let maxArea = 24;
     let userAvailableMissions = 0;
 
     let galaxyData = [];
@@ -878,7 +878,7 @@ async function findExplorationTransactions(user, outputNode) {
         outputNode.innerHTML += "available missions: " + availableMissions + " available explorers: " + explorersAvailable + ".<br>";
 
         galaxyData[i] = await getGalaxy(planetCoords[0], planetCoords[1], maxArea, maxArea);
-        //console.dir(galaxyData[i])
+        console.dir(galaxyData[i])
         space[i] = [];
         let xmin = galaxyData[i].area.xmin;
         let xmax = galaxyData[i].area.xmax;
@@ -888,6 +888,18 @@ async function findExplorationTransactions(user, outputNode) {
         for (let x=xmin; x<=xmax; x+=1) {
             for (let y=ymin; y<=ymax; y+=1) {
                 let spaceInfo = {x: x, y: y};
+
+                let priorTransactionIndex = explorationTransactions.findIndex(entry => entry.x == x && entry.y == y)
+                spaceInfo["priorTransaction"] = true;
+                if (priorTransactionIndex == -1) {
+                    spaceInfo["priorTransaction"] = false;
+                }
+
+                let planetsIndex = galaxyData[i].planets.findIndex(entry => entry.x == x && entry.y == y)
+                spaceInfo["planet"] = true;
+                if (planetsIndex == -1) {
+                    spaceInfo["planet"] = false;
+                }
 
                 let exploredIndex = galaxyData[i].explored.findIndex(entry => entry.x == x && entry.y == y)
                 spaceInfo["explored"] = true;
@@ -922,7 +934,11 @@ async function findExplorationTransactions(user, outputNode) {
         //console.log(space[i])
         proposedExplorations[i] = space[i].filter(space => space.explored == false);
         //console.log(proposedExplorations[i])
+        proposedExplorations[i] = proposedExplorations[i].filter(space => space.priorTransaction == false);
+        //console.log(proposedExplorations[i])
         proposedExplorations[i] = proposedExplorations[i].filter(space => space.underSearch == false);
+        //console.log(proposedExplorations[i])
+        proposedExplorations[i] = proposedExplorations[i].filter(space => space.planet == false);
         //console.log(proposedExplorations[i])
         proposedExplorations[i].sort((a, b) => a.distance - b.distance);
         //console.log(proposedExplorations[i])
