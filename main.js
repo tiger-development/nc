@@ -944,9 +944,9 @@ async function findExplorationTransactions(user, outputNode) {
         i+=1;
     }
 
-    explorationTransactions = explorationTransactions.slice(0, userAvailableMissions);
-    console.dir(explorationTransactions);
-    return explorationTransactions;
+    finalExplorationTransactions = explorationTransactions.slice(0, userAvailableMissions);
+    console.dir(finalExplorationTransactions);
+    return finalExplorationTransactions;
 
 }
 
