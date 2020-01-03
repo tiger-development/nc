@@ -209,7 +209,10 @@ async function runLoginMission(user, mission, maxProcess, outputNode) {
         processKeychainTransactions(user, buildingsTransactions, maxProcess);
         // buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
         //upgradeBuilding(user, planetId, buildingName)
-
+    } else if (mission == "send explorers") {
+        console.log("runLoginMission - send explorers")
+        let explorationTransactions = await findExplorationTransactions(user, outputNode)
+        processKeychainTransactions(user, explorationTransactions, maxProcess);
     }
 }
 
@@ -224,6 +227,10 @@ async function runInfoMission(user, mission, outputNode) {
         let buildingsTransactions  = await findBuildingsToUpgrade(user, outputNode)
     } else if (mission == "ships") {
         let buildShipTransactions = await findShipsToBuild(user, outputNode)
+    } else if (mission == "market") {
+        let marketInfo = await findMarketTrades(user, outputNode)
+    } else if (mission == "send explorers") {
+        let snipeTransactions = await findExplorationTransactions(user, outputNode)
     }
 }
 
@@ -260,7 +267,7 @@ async function snipes(user, outputNode) {
         let spaceCoords = [mission.end_x, mission.end_y]
         let missionDistance = distance(planetCoords, spaceCoords)
 
-        galaxyData[i] = await getGalaxy(spaceCoords[0], spaceCoords[1])
+        galaxyData[i] = await getGalaxy(spaceCoords[0], spaceCoords[1], 0, 0)
         outputNode.innerHTML += "<br>"
         outputNode.innerHTML += mission.type + "<br>"
         outputNode.innerHTML += "Planet x: " + planetCoords[0] + " y: " + planetCoords[1] + "<br>"
@@ -418,10 +425,46 @@ async function getUserMissions(user, active) {
     return data
 }
 
-async function getGalaxy(xCoord, yCoord) {
-    let height = 0
-    let width = 0
+async function getPlanetMissionInfo(user, planetId) {
+    let response = await fetch("https://api.nextcolony.io/missioninfo?user=" + user + "&planet=" + planetId);
+    let data = await response.json();
+    return data
+}
+
+async function getPlanetFleet(user, planetId) {
+    let response = await fetch("https://api.nextcolony.io/planetfleet?user=" + user + "&planet=" + planetId);
+    let data = await response.json();
+    return data
+}
+
+async function getGalaxy(xCoord, yCoord, height, width) {
+    //let height = 0
+    //let width = 0
     let response = await fetch("https://api.nextcolony.io/loadgalaxy?x=" + xCoord + "&y=" + yCoord + "&height=" + height + "&width=" + width);
+    let data = await response.json();
+    return data
+}
+
+async function getMarketForShip(shipType, active, sold) {
+    let stringAPI = "";
+    if (sold==0) {
+        stringAPI = "https://api.nextcolony.io/asks?active=" + active + "&type=" + shipType;
+    } else if (sold==1) {
+        stringAPI = "https://api.nextcolony.io/asks?active=" + active + "&sold=" + sold + "&orderby=sold&order=desc&type=" + shipType;
+    }
+    let response = await fetch(stringAPI)
+    let data = await response.json();
+    return data
+}
+
+async function getMarketForShipAndUser(user, shipType, active, sold) {
+    let stringAPI = "";
+    if (sold==0) {
+        stringAPI = "https://api.nextcolony.io/asks?active=" + active + "&user=" + user + "&type=" + shipType;
+    } else if (sold==1) {
+        stringAPI = "https://api.nextcolony.io/asks?active=" + active + "&user=" + user + "&sold=" + sold + "&orderby=sold&order=desc&type=" + shipType;
+    }
+    let response = await fetch(stringAPI)
     let data = await response.json();
     return data
 }
@@ -775,6 +818,331 @@ async function findShipsToBuild(user, outputNode) {
     return shipsTransactions;
 }
 
+async function findExplorationTransactions(user, outputNode) {
+
+  let planetPriority = [
+      {user: "miniature-tiger", planets: ["P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-Z7M914SV034", "P-ZUEF2H4ZVFK", "P-ZSHCI4Y9BBK", "P-Z6NP7GS7LN4", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
+      {user: "tiger-zaps", planets: ["P-ZZA367LJYRK"], planetNames: []},
+  ]
+    /*
+    let planetPriority = [
+        {user: "miniature-tiger", planets: ["P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-Z7M914SV034", "P-ZUEF2H4ZVFK", "P-ZSHCI4Y9BBK", "P-Z6NP7GS7LN4", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
+        {user: "tiger-zaps", planets: ["P-ZS3RWN9D840", "P-ZXPZG03WPXC", "P-ZZA367LJYRK", "P-ZSJR1UCWGJK", "P-ZL1K8I8Y86O", "P-Z2A6EKIIC00", "P-ZKNJOCNKC0W", "P-Z142YAEQFO0", "P-ZE8TH46FVK0"], planetNames: []},
+    ]
+    */
+
+    let maxArea = 18;
+    let userAvailableMissions = 0;
+
+    let galaxyData = [];
+
+    let space = [];
+
+    let planetMissionInfo = [];
+    let planetFleetInfo = [];
+
+    let proposedExplorations = [];
+    let explorationTransactions = [];
+
+    let dataPlanets = await getPlanetsOfUser(user);
+    console.dir(dataPlanets)
+    let priorityPlanetIndex = planetPriority.findIndex(entry => entry.user == user)
+    let userPriorityPlanets = planetPriority[priorityPlanetIndex].planets;
+
+    let planetData = [];
+    let i=0;
+
+    for (const priorityPlanet of userPriorityPlanets) {
+        let dataPlanetIndex = dataPlanets.planets.findIndex(planet => planet.id == priorityPlanet);
+        let dataPlanet = dataPlanets.planets[dataPlanetIndex];
+        let planetCoords = [dataPlanet.posx, dataPlanet.posy];
+
+
+
+
+        planetFleetInfo[i] = await getPlanetFleet(user, priorityPlanet)
+        let explorerFleetIndex = planetFleetInfo[i].findIndex(fleet => fleet.type == "explorership");
+        let explorersAvailable = 0;
+        if (explorerFleetIndex != -1) {
+            explorersAvailable = planetFleetInfo[i][explorerFleetIndex].quantity;
+        }
+        console.dir(planetFleetInfo[i])
+        console.log(explorerFleetIndex, explorersAvailable)
+
+        planetMissionInfo[i] = await getPlanetMissionInfo(user, priorityPlanet);
+        console.dir(planetMissionInfo[i])
+        let availableMissions = planetMissionInfo[i].planet_unused;
+        let availableExplorerMissions = Math.min(availableMissions, explorersAvailable);
+        console.log(availableMissions)
+
+        if (i==0) {
+            userAvailableMissions = planetMissionInfo[i].user_unused;
+            outputNode.innerHTML += "<br>";
+            outputNode.innerHTML += user + " available missions: " + userAvailableMissions + "<br>";
+        }
+
+        outputNode.innerHTML += "<br>";
+        outputNode.innerHTML += dataPlanet.id + " " + dataPlanet.name + ":<br>";
+        outputNode.innerHTML += "available missions: " + availableMissions + " available explorers: " + explorersAvailable + ".<br>";
+
+        galaxyData[i] = await getGalaxy(planetCoords[0], planetCoords[1], maxArea, maxArea);
+        console.dir(galaxyData[i])
+        space[i] = [];
+        let xmin = galaxyData[i].area.xmin;
+        let xmax = galaxyData[i].area.xmax;
+        let ymin = galaxyData[i].area.ymin;
+        let ymax = galaxyData[i].area.ymax;
+
+        for (let x=xmin; x<=xmax; x+=1) {
+            for (let y=ymin; y<=ymax; y+=1) {
+                let spaceInfo = {x: x, y: y};
+
+                let exploredIndex = galaxyData[i].explored.findIndex(entry => entry.x == x && entry.y == y)
+                spaceInfo["explored"] = true;
+                if (exploredIndex == -1) {
+                    spaceInfo["explored"] = false;
+                }
+
+                let explorations = galaxyData[i].explore.filter(entry => entry.x == x && entry.y == y)
+                if (explorations.length > 0) {
+                    spaceInfo["exploration"] = true;
+                    //let k=0;
+                    //for (const exploration of explorations) {
+                    //let spaceCoords = [mission.end_x, mission.end_y]
+                    //let missionDistance = distance(planetCoords, spaceCoords)
+
+                    //    k+=1;
+                    //}
+                } else {
+                    spaceInfo["exploration"] = false;
+                }
+
+                let spaceCoords = [x, y]
+                spaceInfo["distance"] = distance(planetCoords, spaceCoords)
+                //console.log(spaceInfo)
+                space[i].push(spaceInfo)
+            }
+        }
+        //console.log(space[i])
+        proposedExplorations[i] = space[i].filter(space => space.explored == false)
+        //console.log(proposedExplorations[i])
+        proposedExplorations[i].sort((a, b) => a.distance - b.distance);
+        //console.log(proposedExplorations[i])
+        proposedExplorations[i] = proposedExplorations[i].slice(0, availableExplorerMissions);
+        //console.log(proposedExplorations[i])
+
+        for (const proposal of proposedExplorations[i]) {
+            let exploration = {};
+            exploration.type = "explorespace";
+            exploration.planetId = priorityPlanet;
+            exploration.x = proposal.x;
+            exploration.y = proposal.y;
+            exploration.shipName = "explorership";
+            explorationTransactions.push(exploration)
+
+            outputNode.innerHTML += exploration.type + " " + exploration.x + " " + exploration.y + " " + exploration.shipName + " " + proposal.distance + "<br>";
+        }
+
+        explorationTransactions.slice(0, userAvailableMissions);
+        console.dir(explorationTransactions);
+
+
+
+
+
+
+        i+=1;
+    }
+
+
+
+}
+
+
+
+async function findMarketTrades(user, outputNode) {
+
+    let shipMarket = [
+        //{type: "corvette", minPrice: 20},
+        {type: "frigate", version: 0, minPrice: 30},
+        {type: "destroyer", version: 0, minPrice: 40},
+        {type: "cruiser", version: 0, minPrice: 60},
+        {type: "battlecruiser", version: 0, minPrice: 150},
+        {type: "carrier", version: 0, minPrice: 300},
+        {type: "dreadnought", version: 0, minPrice: 900},
+        {type: "cutter2", version: 2, minPrice: 40},
+        {type: "corvette2", version: 2, minPrice: 80},
+        {type: "frigate2", version: 2, minPrice: 120},
+        {type: "destroyer2", version: 2, minPrice: 160},
+        {type: "cruiser2", version: 2, minPrice: 300},
+        {type: "battlecruiser2", version: 2, minPrice: 500},
+        {type: "carrier2", version: 2, minPrice: 5000},
+        {type: "dreadnought2", version: 2, minPrice: 9000}
+    ];
+
+    function findIndexInShipMarket(shipType) {
+        return  shipMarket.findIndex(ship => ship.type == shipType);
+    }
+
+    let planetOrderForShipSales = [
+        {user: "tiger-zaps", version0: ["Alpha", "Epsilon", "Zeta", "Theta", "Rho", "Sigma"], version2: ["Pi", "Kappa", "Beta", "Rho", "Sigma", "Delta"]},
+     ]
+
+
+
+    let planetData = [];
+
+    let activeMarketData = [];
+    let soldMarketData = [];
+    let userActiveMarketData = [];
+    let userSoldMarketData = [];
+    let askPrices = [];
+    let marketAsks = [];
+
+    let planetShips = [];
+    let allShips = [];
+
+    let marketTransactions = [];
+    //planetData[i] = await getPlanetResources(planet.id)
+
+    let j=0
+    for (const ship of shipMarket) {
+        if (j==0) {
+            activeMarketData[j] = await getMarketForShip(ship.type, 1, 0);
+            soldMarketData[j] = await getMarketForShip(ship.type, 0, 1);
+            userActiveMarketData[j] = await getMarketForShipAndUser(user, ship.type, 1, 0);
+            userSoldMarketData[j] = await getMarketForShipAndUser(user, ship.type, 0, 1);
+            marketAsks[j] = determineMarketAsks(activeMarketData[j], soldMarketData[j], shipMarket[j])
+            //console.log(activeMarketData[j])
+            //console.log(soldMarketData[j])
+            //console.log(userActiveMarketData[j])
+            //console.log(userSoldMarketData[j])
+
+            for (const ask of marketAsks[j]) {
+
+                outputNode.innerHTML += ask.category + " " + ask.type + " " + ask.price + "<br>"
+                marketTransactions.push(ask)
+            }
+        }
+
+        j+=1;
+    }
+
+    // If lots of ships at lowest price then match this
+    // If only 3 ships at lowest price then match for match but sell rest at 1 below next price
+
+    let dataPlanets = await getPlanetsOfUser(user);
+    let i = 0;
+    for (const planet of dataPlanets.planets) {
+        if (i<5) {
+            console.log(user, planet.id)
+            planetShips[i] = await getPlanetShips(user, planet.id);
+            let usefulShips = planetShips[i].filter(ship => findIndexInShipMarket(ship.type) != -1);
+            usefulShips = usefulShips.filter(ship => ship.for_sale == 0);
+            usefulShips = usefulShips.filter(ship => ship.busy < launchTime/1000);
+            usefulShips = usefulShips.map(ship => ({type: ship.type, id: ship.id, planet: planet.id, version: shipMarket[findIndexInShipMarket(ship.type)].version}))
+            //usefulShips = usefulShips.map(ship => ({...ship, priority: shipPriority[ship.type]}))
+            allShips += usefulShips;
+            console.dir(usefulShips)
+        }
+
+
+        i += 1
+    }
+
+    return marketTransactions;
+}
+
+function summariseAndSort(data) {
+    let summary = [];
+
+    for (const ask of data) {
+        let index = summary.findIndex(level => level.price == ask.price);
+        if (index == -1) {
+            summary.push({price: ask.price, count: 1})
+        } else {
+            summary[index].count+=1;
+        }
+    }
+
+    summary.sort((a, b) => a.price - b.price);
+
+    return summary;
+}
+
+function determineMarketAsks(activeMarketData, soldMarketData, shipMarket) {
+    //for (const ask of activeMarketData) {
+
+    //}
+    let priceFactor = 100000000;
+    let minPrice = shipMarket.minPrice * priceFactor;
+    console.log(shipMarket.type, minPrice)
+    let reducedActiveMarketData = activeMarketData.map(ask => ({price: ask.price}))
+    let marketTransactions = [];
+
+
+    let activeMarketSummary = summariseAndSort(reducedActiveMarketData);
+    console.dir(activeMarketSummary)
+
+    let currentCount = 0;
+    let totalTransactions = 20;
+    for (const level of activeMarketSummary) {
+        level.price = Math.max(level.price, minPrice);
+        level.count = Math.min(level.count, totalTransactions - currentCount);
+        currentCount += level.count
+    }
+
+    activeMarketSummary = activeMarketSummary.filter(level => level.count > 0);
+    //let askPrices = activeMarketSummary.map(ask => ({price: Math.max(ask.price, minPrice), count: ask.count-1}))
+
+    for (const level of activeMarketSummary) {
+        for (i = 0; i < level.count; i+=1) {
+            // Create market transaction and push to transaction list
+            let askInfo = {}
+            askInfo.category = "ship"
+            askInfo.type = shipMarket.type
+            askInfo.itemUID = "";
+            //askInfo.price = activeMarketSummary.price / priceFactor;
+            askInfo.price = level.price / priceFactor;
+            marketTransactions.push(askInfo);
+        }
+    }
+
+
+
+
+    //var activeMarketSummaryCount = activeMarketSummary.reduce(function(object, item) {
+  //      object[item.price] = (object[item.price] || 0) + 1;
+    //    return object;
+    //}, {})
+
+
+
+    //activeMarketSummaryCount = activeMarketSummaryCount.map(level => ({price: Object.keys[level][0], count: level[Object.keys[level][0]]})
+    //activeMarketSummaryCount = activeMarketSummaryCount.map(level => ({price: Object.keys[level][0]}))
+
+    //let lowestPrice = activeMarketSummaryCount[0]
+
+
+
+    //let activeMarketSummaryCount = count(activeMarketSummary);
+
+    /*
+    let currentPrice = activeMarketData[0].price
+    let activeMarketSummary = [{price: currentPrice, count: 0}];
+    for (const ask of activeMarketData) {
+        activeMarketSummary
+        if (ask.price == currentPrice) {
+            activeMarketSummary
+        }
+    }
+    */
+
+    console.dir(activeMarketSummary)
+    //console.dir(askPrices)
+    return marketTransactions;
+}
+
 
 
 function buildShip(user, planetId, shipName) {
@@ -788,7 +1156,6 @@ function buildShip(user, planetId, shipName) {
 
     scJson["command"] = scCommand;
     var finalJson = JSON.stringify(scJson);
-    //var appId = this.appId();
 
     keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
 }
@@ -804,10 +1171,41 @@ function upgradeBuilding(user, planetId, buildingName) {
 
     scJson["command"] = scCommand;
     var finalJson = JSON.stringify(scJson);
-    //var appId = this.appId();
 
     keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
+}
 
+function ask(user, category, itemUID, price) {
+    var scJson = {};
+    var scCommand = {};
+    // Create Command
+    scJson["username"] = user;
+    scJson["type"] = "ask";
+    scCommand["tr_var1"] = category;
+    scCommand["tr_var2"] = uid;
+    scCommand["tr_var3"] = price;
+    scCommand["tr_var4"] = "null";
+
+    scJson["command"] = scCommand;
+    var finalJson = JSON.stringify(scJson);
+
+    keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
+}
+
+
+function exploreSpace(user, planetId, x, y, shipName) {
+    var scJson = {};
+    var scCommand = {};
+    scJson["username"] = user;
+    scJson["type"] = "explorespace";
+    scCommand["tr_var1"] = planetId;
+    scCommand["tr_var2"] = x;
+    scCommand["tr_var3"] = y;
+    scCommand["tr_var4"] = shipName;
+    scJson["command"] = scCommand;
+    var finalJson = JSON.stringify(scJson);
+
+    keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
 }
 
 
@@ -831,6 +1229,8 @@ function processKeychainTransactions(user, transactions, maxProcess) {
             upgradeBuilding(user, transaction.planetId, transaction.name)
         } else if (transaction.type == "buildShip") {
             buildShip(user, transaction.planetId, transaction.name)
+        } else if (transaction.type == "explorespace") {
+            exploreSpace(user, transaction.planetId, transaction.x, transaction.y, transaction.shipName)
         }
 
         if (transactionsToProcess > 0) {
