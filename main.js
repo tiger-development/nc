@@ -187,12 +187,14 @@ function logoutUser() {
 
 
 const launchTime = Date.now();
+let missionLaunchTime = Date.now();
 let workFlowMonitor = true
 
 
 
 async function runLoginMission(user, mission, maxProcess, outputNode) {
-    outputNode.innerHTML = ""
+    outputNode.innerHTML = "";
+    missionLaunchTime = Date.now();
 
     if (mission == "check") {
         check(user)
@@ -217,7 +219,8 @@ async function runLoginMission(user, mission, maxProcess, outputNode) {
 }
 
 async function runInfoMission(user, mission, outputNode) {
-    outputNode.innerHTML = ""
+    outputNode.innerHTML = "";
+    missionLaunchTime = Date.now();
 
     if (mission == "targets") {
         targets(user, outputNode)
@@ -305,6 +308,13 @@ function convertToHoursMinutes(time) {
     let minutes = Math.floor(time/1000/60 - hours*60)
     return [hours, minutes]
 }
+
+function convertDistanceToTimeInSeconds(speed, distance) {
+    let timeToTravelInHours = distance / speed;
+    let timeToTravelInSeconds = timeToTravelInHours * 60 * 60;
+    return timeToTravelInSeconds;
+}
+
 
 function distance(planetCoords, spaceCoords) {
     let xDistance = spaceCoords[0] - planetCoords[0]
@@ -828,6 +838,9 @@ async function findExplorationTransactions(user, outputNode) {
 
 
     let maxArea = 24;
+    let closeHour = 0;
+    let reopenHour = 7;
+
     let userAvailableMissions = 0;
 
     let galaxyData = [];
@@ -889,6 +902,16 @@ async function findExplorationTransactions(user, outputNode) {
             for (let y=ymin; y<=ymax; y+=1) {
                 let spaceInfo = {x: x, y: y};
 
+                let spaceCoords = [x, y];
+                spaceInfo["distance"] = distance(planetCoords, spaceCoords);
+
+                let travelTime = convertDistanceToTimeInSeconds(1, spaceInfo.distance);
+                spaceInfo["arrival"] = (missionLaunchTime/1000) + travelTime;
+                spaceInfo["return"] = (missionLaunchTime/1000) + (travelTime * 2);
+                spaceInfo["returnDate"] = new Date(spaceInfo.return * 1000);
+                spaceInfo["returnHour"] = spaceInfo.returnDate.getHours();
+
+
                 let priorTransactionIndex = explorationTransactions.findIndex(entry => entry.x == x && entry.y == y)
                 spaceInfo["priorTransaction"] = true;
                 if (priorTransactionIndex == -1) {
@@ -907,26 +930,54 @@ async function findExplorationTransactions(user, outputNode) {
                     spaceInfo["explored"] = false;
                 }
 
+
                 let explorations = galaxyData[i].explore.filter(entry => entry.x == x && entry.y == y)
+
                 spaceInfo["underSearch"] = false;
+                spaceInfo["sniped"] = false;
                 if (explorations.length > 0) {
                     spaceInfo["exploration"] = true;
+
+                    let snipes = [];
+
                     let k=0;
                     for (const exploration of explorations) {
-                    if (exploration.user == user) {
-                        spaceInfo["underSearch"] = true;
-                    }
+
+
+                        if (exploration.user == user) {
+                            spaceInfo["underSearch"] = true;
+                        } else {
+                            let snipeInfo = {x: x, y: y};
+                            snipeInfo["rivalUser"] = exploration.user;
+                            snipeInfo["rivalArrival"] = exploration.date;
+                            snipeInfo["userArrival"] = spaceInfo.arrival;
+                            snipeInfo["winner"] = "user";
+                            if (snipeInfo.rivalArrival < snipeInfo.userArrival) {
+                                snipeInfo["winner"] = "rival"
+                                spaceInfo["sniped"] = true;
+                            }
+                            snipes.push(snipeInfo)
+                        }
+
+
                     //let spaceCoords = [mission.end_x, mission.end_y]
                     //let missionDistance = distance(planetCoords, spaceCoords)
 
                         k+=1;
                     }
+                    if (snipes.length > 0) {
+                        console.dir(snipes)
+                        console.dir(spaceInfo)
+                    }
+
                 } else {
                     spaceInfo["exploration"] = false;
                 }
 
-                let spaceCoords = [x, y]
-                spaceInfo["distance"] = distance(planetCoords, spaceCoords)
+
+
+
+
                 //console.log(spaceInfo)
                 space[i].push(spaceInfo)
             }
@@ -937,6 +988,8 @@ async function findExplorationTransactions(user, outputNode) {
         proposedExplorations[i] = proposedExplorations[i].filter(space => space.priorTransaction == false);
         //console.log(proposedExplorations[i])
         proposedExplorations[i] = proposedExplorations[i].filter(space => space.underSearch == false);
+        proposedExplorations[i] = proposedExplorations[i].filter(space => space.sniped == false);
+        proposedExplorations[i] = proposedExplorations[i].filter(space => space.returnHour > reopenHour);
         //console.log(proposedExplorations[i])
         proposedExplorations[i] = proposedExplorations[i].filter(space => space.planet == false);
         //console.log(proposedExplorations[i])

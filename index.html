@@ -36,8 +36,16 @@
 
 
     <div>
-        Missions requiring login:
+        Transaction Missions:
     </div>
+    <br>
+    Maximum transactions: <input type="number" id="numberOfTransactions" value="1"> <br>
+    Planets to run:
+    <select id="missionPlanet">
+        <option>all</option>
+    </select>
+    <br>
+    Mission:
     <select id="loginMissionSelect">
         <option>send explorers</option>
         <option>upgrade buildings</option>
@@ -45,13 +53,14 @@
         <option>check</option>
     </select>
 
-    <input type="number" id="numberOfTransactions" value="1">
+
 
     <button id="runLoginMission">Run Mission</button><br><br>
 
     <div>
-        Information missions:
+        Information searches:
     </div>
+    <br>
     <select id="infoMissionSelect">
         <option>send explorers</option>
         <option>market</option>
