@@ -4,7 +4,7 @@ let keychainFunctioning = false;
 
 
 // On page load
-window.addEventListener('load', (event) => {
+window.addEventListener('load', async (event) => {
     // Temp
     console.log(window.steem_keychain)
 
@@ -31,6 +31,9 @@ window.addEventListener('load', (event) => {
 
     const outputNode = document.getElementById('output');
 
+
+
+
     //let user = inputs.elements[0].value
     //let mission = inputs.elements[0].value
 
@@ -49,17 +52,23 @@ window.addEventListener('load', (event) => {
         console.log('Keychain not installed');
     }
 
+    for (const userName of userList) {
+        await createUserData(userName);
+    }
 
     // Check if anyone is already logged in or set for info
     let user = getUser();
     let logInStatus = getLogInStatus();
 
+    let userData = [];
     if (user && logInStatus == "keychain") {
         loginDisplay(user)
+        userData = loginUserData(user);
     } else if (user && logInStatus == "setForInfo") {
         loginDisplay(user)
+        userData =loginUserData(user);
     } else {
-        logoutDisplay()
+        logoutDisplay();
     }
 
     // When login button is clicked
@@ -80,6 +89,7 @@ window.addEventListener('load', (event) => {
                         user = setUser(userValue);
                         logInStatus = setLogInStatus("keychain")
                         loginDisplay(userValue)
+                        userData =loginUserData(user);
                     }
                 });
             } else {
@@ -87,6 +97,7 @@ window.addEventListener('load', (event) => {
                 user = setUser(userValue);
                 logInStatus = setLogInStatus("setForInfo")
                 loginDisplay(userValue)
+                userData = loginUserData(user);
             }
     });
 
@@ -97,7 +108,8 @@ window.addEventListener('load', (event) => {
         user = false
         logInStatus = false
         logoutUser();
-        logoutDisplay()
+        logoutDisplay();
+        userData = [];
     });
 
     runLoginMissionButton.addEventListener('click', (e) => {
@@ -108,7 +120,7 @@ window.addEventListener('load', (event) => {
         const maxProcess = maxProcessField.value;
 
         if (user && logInStatus == "keychain") {
-            runLoginMission(user, mission, maxProcess, outputNode);
+            runLoginMission(user, userData, mission, maxProcess, outputNode);
         } else {
             console.log('User not logged in with keychain.');
         }
@@ -120,7 +132,7 @@ window.addEventListener('load', (event) => {
 
         const mission = infoMissionSelect.value;
         if (user && (logInStatus == "setForInfo" || logInStatus == "keychain")) {
-            runInfoMission(user, mission, outputNode);
+            runInfoMission(user, userData, mission, outputNode);
         } else {
             console.log('User not logged in for info.');
         }
@@ -134,6 +146,10 @@ window.addEventListener('load', (event) => {
         usernameSelect.style.display = 'none';
         logoutButton.style.display = 'initial';
         status.innerHTML = 'Logged in as ' + user;
+    }
+
+    function loginUserData(user) {
+        return fetchUserData(user);
     }
 
     function logoutDisplay() {
@@ -192,7 +208,7 @@ let workFlowMonitor = true
 
 
 
-async function runLoginMission(user, mission, maxProcess, outputNode) {
+async function runLoginMission(user, userData, mission, maxProcess, outputNode) {
     outputNode.innerHTML = "";
     missionLaunchTime = Date.now();
 
@@ -201,24 +217,24 @@ async function runLoginMission(user, mission, maxProcess, outputNode) {
     } else if (mission == "build ships") {
         console.log("runLoginMission - build ships")
         //buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
-        let buildShipTransactions = await findShipsToBuild(user, outputNode)
+        let buildShipTransactions = await findShipsToBuild(user, userData, outputNode)
         processKeychainTransactions(user, buildShipTransactions, maxProcess);
 
     } else if (mission == "upgrade buildings") {
         console.log("runLoginMission - upgrade buildings")
-        let buildingsTransactions = await findBuildingsToUpgrade(user, outputNode)
+        let buildingsTransactions = await findBuildingsToUpgrade(user, userData, outputNode)
         //upgradeBuilding(user, "P-Z142YAEQFO0", "shieldgenerator")
         processKeychainTransactions(user, buildingsTransactions, maxProcess);
         // buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
         //upgradeBuilding(user, planetId, buildingName)
     } else if (mission == "send explorers") {
         console.log("runLoginMission - send explorers")
-        let explorationTransactions = await findExplorationTransactions(user, outputNode)
+        let explorationTransactions = await findExplorationTransactions(user, userData, outputNode)
         processKeychainTransactions(user, explorationTransactions, maxProcess);
     }
 }
 
-async function runInfoMission(user, mission, outputNode) {
+async function runInfoMission(user, userData, mission, outputNode) {
     outputNode.innerHTML = "";
     missionLaunchTime = Date.now();
 
@@ -227,13 +243,15 @@ async function runInfoMission(user, mission, outputNode) {
     } else if (mission == "snipes") {
         snipes(user,outputNode)
     } else if (mission == "buildings") {
-        let buildingsTransactions  = await findBuildingsToUpgrade(user, outputNode)
+        let buildingsTransactions = await findBuildingsToUpgrade(user, userData, outputNode)
     } else if (mission == "ships") {
-        let buildShipTransactions = await findShipsToBuild(user, outputNode)
+        let buildShipTransactions = await findShipsToBuild(user, userData, outputNode)
     } else if (mission == "market") {
-        let marketInfo = await findMarketTrades(user, outputNode)
+        let marketInfo = await findMarketTrades(user, userData, outputNode)
     } else if (mission == "send explorers") {
-        let snipeTransactions = await findExplorationTransactions(user, outputNode)
+        let explorationTransactions = await findExplorationTransactions(user, userData, outputNode)
+    } else if (mission == "define strategy") {
+        await defineStrategy(user, outputNode)
     }
 }
 
@@ -510,13 +528,14 @@ async function fetchBuildingsData(user) {
     return buildingsData;
 }
 
-async function shipsToUpgradeForPlanet(planetId, resources, shipyard, shipPriority) {
+async function shipsToUpgradeForPlanet(planetId, resources, shipyard, shipPriority, minimumShipPriority) {
     //let scarceResource = findScarceResource(JSON.parse(JSON.stringify(resources)));
     let remainingResources = JSON.parse(JSON.stringify(resources));
 
     let shipyardActivated = shipyard.filter(ship => ship.activated === true);
     //console.dir(shipyardActivated)
-    let shipyardPriorityOnly = shipyardActivated.filter(ship => shipHasPriority(ship.type, shipPriority) === true);
+    //let shipyardPriorityOnly = shipyardActivated.filter(ship => shipHasPriority(ship.type, shipPriority) === true);
+    let shipyardPriorityOnly = shipyardActivated.filter(ship => shipHasSufficientPriority(ship.type, shipPriority, minimumShipPriority) === true);
     //console.dir(shipyardPriorityOnly)
 
     let shipyardWithPriority = shipyardPriorityOnly.map(ship => ({...ship, priority: shipPriority[ship.type]}))
@@ -677,6 +696,18 @@ function shipHasPriority(type, shipPriority) {
     }
 }
 
+function shipHasSufficientPriority(type, shipPriority, minimumShipPriority) {
+    let result = false;
+    if (shipPriority[type] != undefined) {
+        if (shipPriority[type] >= minimumShipPriority) {
+            result = true;
+        } else {
+            //console.log("cannot build " + type + " as shipPriority of " + shipPriority + " < " + minimumShipPriority)
+        }
+    }
+    return result;
+}
+
 function shipHasSkills(ship) {
     let result = true;
 
@@ -711,9 +742,8 @@ function checkIfNextSkillCompleted(current, skill) {
 }
 
 
-async function findBuildingsToUpgrade(user, outputNode) {
+async function findBuildingsToUpgrade(user, userData, outputNode) {
 
-    console.log("buildingsInfo")
     let minimumRequiredSkillLevel = 18;
 
     let planetData = [];
@@ -723,19 +753,25 @@ async function findBuildingsToUpgrade(user, outputNode) {
     let buildingsTransactions = [];
 
     let dataPlanets = await getPlanetsOfUser(user);
-    //console.dir(dataPlanets)
-
-
 
     let i = 0;
     for (const planet of dataPlanets.planets) {
-        planetData[i] = await getPlanetResources(planet.id)
-        planetResources[i] = await calculateCurrentResources(planetData[i])
-        buildingsData[i] = await getBuildings(planet.id);
-        buildingsToUpgrade[i] = await buildingsToUpgradeForPlanet(planet.id, planetResources[i], buildingsData[i], minimumRequiredSkillLevel)
-        for (const upgrade of buildingsToUpgrade[i]) {
-            outputNode.innerHTML += upgrade.type + " " + upgrade.planetId + " " + upgrade.name + " " + upgrade.current + "<br>"
-            buildingsTransactions.push(upgrade)
+
+        let userDataPlanetIndex = userData.planets.findIndex(entry => entry.id == planet.id)
+        let build = true;
+        if (userDataPlanetIndex != -1) {
+            build = userData.planets[userDataPlanetIndex].build;
+        }
+
+        if (build == true) {
+            planetData[i] = await getPlanetResources(planet.id)
+            planetResources[i] = await calculateCurrentResources(planetData[i])
+            buildingsData[i] = await getBuildings(planet.id);
+            buildingsToUpgrade[i] = await buildingsToUpgradeForPlanet(planet.id, planetResources[i], buildingsData[i], minimumRequiredSkillLevel)
+            for (const upgrade of buildingsToUpgrade[i]) {
+                outputNode.innerHTML += upgrade.type + " " + upgrade.planetId + " " + upgrade.name + " " + upgrade.current + "<br>"
+                buildingsTransactions.push(upgrade)
+            }
         }
 
         i += 1
@@ -745,7 +781,7 @@ async function findBuildingsToUpgrade(user, outputNode) {
     return buildingsTransactions;
 }
 
-async function findShipsToBuild(user, outputNode) {
+async function findShipsToBuild(user, userData, outputNode) {
     /*
     let shipPriority2 = {
         scout: 0,
@@ -783,15 +819,15 @@ async function findShipsToBuild(user, outputNode) {
         battlecruiser: 67,
         carrier: 68,
         dreadnought: 69,
-        cutter2: 82,
-        corvette2: 83,
-        frigate2: 84,
-        destroyer2: 85,
-        cruiser2: 86,
-        battlecruiser2: 87,
-        carrier2: 88,
-        transportship2: 89,
-        dreadnought2: 90,
+        cutter2: 81,
+        corvette2: 82,
+        frigate2: 83,
+        destroyer2: 84,
+        cruiser2: 85,
+        battlecruiser2: 86,
+        carrier2: 87,
+        transportship2: 91,
+        dreadnought2: 92,
         explorer2: 99
     }
 
@@ -805,22 +841,33 @@ async function findShipsToBuild(user, outputNode) {
 
     let i = 0;
     for (const planet of dataPlanets.planets) {
-        //if (planet.name === "Apeiron-61" || planet.name === "Delta") {
-        planetData[i] = await getPlanetResources(planet.id)
-        planetResources[i] = await calculateCurrentResources(planetData[i])
-        shipyardData[i] = await getPlanetShipyard(user, planet.id)
-        shipsToUpgrade[i] = await shipsToUpgradeForPlanet(planet.id, planetResources[i], shipyardData[i], shipPriority)
-        //console.dir(planet)
-        //console.log(planet.id, planet.name)
-        //}
-        //buildingsToUpgrade[i] = await buildingsToUpgradeForPlanet(planet.id, planetResources[i], buildingsData[i], minimumRequiredSkillLevel)
-        //for (const upgrade of buildingsToUpgrade[i]) {
-        //    outputNode.innerHTML += upgrade.type + " " + upgrade.planetId + " " + upgrade.name + " " + upgrade.current + "<br>"
-        //    buildingsTransactions.push(upgrade)
-        //}
-        for (const upgrade of shipsToUpgrade[i]) {
-            outputNode.innerHTML += upgrade.type + " " + upgrade.planetId + " " + upgrade.name + "<br>"
-            shipsTransactions.push(upgrade)
+
+        let userDataPlanetIndex = userData.planets.findIndex(entry => entry.id == planet.id)
+        let shipbuild = true;
+        let minimumShipPriority = 0;
+        if (userDataPlanetIndex != -1) {
+            shipbuild = userData.planets[userDataPlanetIndex].shipbuild;
+            minimumShipPriority = userData.planets[userDataPlanetIndex].minimumShipPriority;
+        }
+        console.log(planet.id, shipbuild, planet.name, minimumShipPriority)
+
+        if (shipbuild == true) {
+            planetData[i] = await getPlanetResources(planet.id)
+            planetResources[i] = await calculateCurrentResources(planetData[i])
+            shipyardData[i] = await getPlanetShipyard(user, planet.id)
+            shipsToUpgrade[i] = await shipsToUpgradeForPlanet(planet.id, planetResources[i], shipyardData[i], shipPriority, minimumShipPriority)
+            //console.dir(planet)
+            //console.log(planet.id, planet.name)
+            //}
+            //buildingsToUpgrade[i] = await buildingsToUpgradeForPlanet(planet.id, planetResources[i], buildingsData[i], minimumRequiredSkillLevel)
+            //for (const upgrade of buildingsToUpgrade[i]) {
+            //    outputNode.innerHTML += upgrade.type + " " + upgrade.planetId + " " + upgrade.name + " " + upgrade.current + "<br>"
+            //    buildingsTransactions.push(upgrade)
+            //}
+            for (const upgrade of shipsToUpgrade[i]) {
+                outputNode.innerHTML += upgrade.type + " " + upgrade.planetId + " " + upgrade.name + "<br>"
+                shipsTransactions.push(upgrade)
+            }
         }
         i += 1
     }
@@ -828,7 +875,8 @@ async function findShipsToBuild(user, outputNode) {
     return shipsTransactions;
 }
 
-async function findExplorationTransactions(user, outputNode) {
+async function findExplorationTransactions(user, userData, outputNode) {
+    // UPDATE FOR USER DATA AND REMOVE PRIORITIES FROM HERE
 
     let planetPriority = [
         {user: "miniature-tiger", planets: ["P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-Z7M914SV034", "P-ZUEF2H4ZVFK", "P-ZSHCI4Y9BBK", "P-Z6NP7GS7LN4", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
@@ -966,8 +1014,8 @@ async function findExplorationTransactions(user, outputNode) {
                         k+=1;
                     }
                     if (snipes.length > 0) {
-                        console.dir(snipes)
-                        console.dir(spaceInfo)
+                        //console.dir(snipes)
+                        //console.dir(spaceInfo)
                     }
 
                 } else {
@@ -998,6 +1046,12 @@ async function findExplorationTransactions(user, outputNode) {
         proposedExplorations[i] = proposedExplorations[i].slice(0, availableExplorerMissions);
         //console.log(proposedExplorations[i])
 
+        let reportingExplorations = space[i].filter(space => space.explored == false);
+        reportingExplorations = reportingExplorations.filter(space => space.priorTransaction == false);
+        reportingExplorations = reportingExplorations.filter(space => space.underSearch == false);
+        reportingExplorations = reportingExplorations.filter(space => space.planet == false);
+        reportingExplorations = reportingExplorations.slice(0, availableExplorerMissions);
+
         for (const proposal of proposedExplorations[i]) {
             let exploration = {};
             exploration.type = "explorespace";
@@ -1021,7 +1075,7 @@ async function findExplorationTransactions(user, outputNode) {
 
 
 
-async function findMarketTrades(user, outputNode) {
+async function findMarketTrades(user, userData, outputNode) {
 
     let shipMarket = [
         //{type: "corvette", minPrice: 20},
@@ -1206,107 +1260,23 @@ function determineMarketAsks(activeMarketData, soldMarketData, shipMarket) {
 
 
 
-function buildShip(user, planetId, shipName) {
-    var scJson = {};
-    var scCommand = {};
-    // Create Command
-    scJson["username"] = user;
-    scJson["type"] = "buildship";
-    scCommand["tr_var1"] = planetId;
-    scCommand["tr_var2"] = shipName;
+async function defineStrategy(user, outputNode) {
+    //let userData = await createUserData(user);
+    console.log(userData);
+    /*
+    let dataPlanets = await getPlanetsOfUser(user);
+    let i = 0;
+    for (const planet of dataPlanets.planets) {
+        outputNode.innerHTML += "{id: \"" + planet.id + "\", name: \"" + planet.name + "\", build: true, shipbuild: true, minimumShipPriority: 0, explore: false}"
+        + "<br>"
+        //outputNode.innerHTML += "{id: """ + planet.id + """, name: "
 
-    scJson["command"] = scCommand;
-    var finalJson = JSON.stringify(scJson);
-
-    keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
-}
-
-function upgradeBuilding(user, planetId, buildingName) {
-    var scJson = {};
-    var scCommand = {};
-    // Create Command
-    scJson["username"] = user;
-    scJson["type"] = "upgrade";
-    scCommand["tr_var1"] = planetId;
-    scCommand["tr_var2"] = buildingName;
-
-    scJson["command"] = scCommand;
-    var finalJson = JSON.stringify(scJson);
-
-    keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
-}
-
-function ask(user, category, itemUID, price) {
-    var scJson = {};
-    var scCommand = {};
-    // Create Command
-    scJson["username"] = user;
-    scJson["type"] = "ask";
-    scCommand["tr_var1"] = category;
-    scCommand["tr_var2"] = uid;
-    scCommand["tr_var3"] = price;
-    scCommand["tr_var4"] = "null";
-
-    scJson["command"] = scCommand;
-    var finalJson = JSON.stringify(scJson);
-
-    keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
-}
-
-
-function exploreSpace(user, planetId, x, y, shipName) {
-    var scJson = {};
-    var scCommand = {};
-    scJson["username"] = user;
-    scJson["type"] = "explorespace";
-    scCommand["tr_var1"] = planetId;
-    scCommand["tr_var2"] = x;
-    scCommand["tr_var3"] = y;
-    scCommand["tr_var4"] = shipName;
-    scJson["command"] = scCommand;
-    var finalJson = JSON.stringify(scJson);
-
-    keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
-}
-
-
-
-function processKeychainTransactions(user, transactions, maxProcess) {
-
-    let transactionsToProcess = Math.min(maxProcess, transactions.length)
-
-    if (transactionsToProcess > 0) {
-        processKeychainTransactionWithDelay()
-    } else {
-        console.log("No transactions to process.")
+        i+=1;
     }
+    */
 
-    function processKeychainTransactionWithDelay() {
-        transactionsToProcess-=1
-        console.log(transactionsToProcess)
-        let transaction = transactions.shift();
-        if (transaction.type == "upgradeBuilding") {
-            console.log(user, transaction.planetId, transaction.name)
-            upgradeBuilding(user, transaction.planetId, transaction.name)
-        } else if (transaction.type == "buildShip") {
-            buildShip(user, transaction.planetId, transaction.name)
-        } else if (transaction.type == "explorespace") {
-            exploreSpace(user, transaction.planetId, transaction.x, transaction.y, transaction.shipName)
-        }
-
-        if (transactionsToProcess > 0) {
-            setTimeout(processKeychainTransactionWithDelay, 1000);
-        } else {
-            console.log("Transactions complete")
-        }
-    }
 }
 
 
-
-
-function keychainCustomJson(account_name, custom_json_id, key_type, json, display_name) {
-    steem_keychain.requestCustomJson(account_name, custom_json_id, key_type, json, display_name, function(response) {
-        console.log(response);
-    });
-}
+    //outputNode.innerHTML += upgrade.type + " " + upgrade.planetId + " " + upgrade.name + " " + upgrade.current + "<br>"
+    //{id: "P-ZCBO9MBOJ2O", name: "Alpha", build: true, shipbuild: true, minimumShipPriority: 0, explore: false}
