@@ -1047,9 +1047,8 @@ async function findExplorationTransactions(user, userData, outputNode) {
         //console.log(proposedExplorations[i])
         snipeOpportunities = proposedExplorations[i].filter(space => space.sniped == "opportunity");
         snipeOpportunities = snipeOpportunities.slice(0, availableExplorerMissions);
-        console.log(snipeOpportunities)
+
         nonSnipeExplorations = proposedExplorations[i].filter(space => space.sniped == "none");
-        console.log(nonSnipeExplorations)
         nonSnipeExplorations = nonSnipeExplorations.slice(0, availableExplorerMissions - snipeOpportunities.length);
         //proposedExplorations[i] = proposedExplorations[i].slice(0, availableExplorerMissions);
         //console.log(proposedExplorations[i])
@@ -1079,8 +1078,6 @@ async function findExplorationTransactions(user, userData, outputNode) {
                 explorationTransactions.push(exploration);
                 outputNode.innerHTML += exploration.type + " " + exploration.x + " " + exploration.y + " " + exploration.shipName + " " + proposal.distance + "<br>";
             }
-
-
         }
 
         i+=1;
