@@ -876,13 +876,12 @@ async function findShipsToBuild(user, userData, outputNode) {
 }
 
 async function findExplorationTransactions(user, userData, outputNode) {
-    // UPDATE FOR USER DATA AND REMOVE PRIORITIES FROM HERE
 
-    let planetPriority = [
-        {user: "miniature-tiger", planets: ["P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-Z7M914SV034", "P-ZUEF2H4ZVFK", "P-ZSHCI4Y9BBK", "P-Z6NP7GS7LN4", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
-        {user: "tiger-zaps", planets: ["P-ZS3RWN9D840", "P-ZXPZG03WPXC", "P-ZZA367LJYRK", "P-ZSJR1UCWGJK", "P-ZL1K8I8Y86O", "P-Z2A6EKIIC00", "P-ZKNJOCNKC0W", "P-Z142YAEQFO0", "P-ZE8TH46FVK0"], planetNames: []},
+    //let planetPriority = [
+    //    {user: "miniature-tiger", planets: ["P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-Z7M914SV034", "P-ZUEF2H4ZVFK", "P-ZSHCI4Y9BBK", "P-Z6NP7GS7LN4", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
+    //    {user: "tiger-zaps", planets: ["P-ZS3RWN9D840", "P-ZXPZG03WPXC", "P-ZZA367LJYRK", "P-ZSJR1UCWGJK", "P-ZL1K8I8Y86O", "P-Z2A6EKIIC00", "P-ZKNJOCNKC0W", "P-Z142YAEQFO0", "P-ZE8TH46FVK0"], planetNames: []},
         //{user: "tiger-zaps", planets: ["P-ZZA367LJYRK"], planetNames: []},
-    ]
+    //]
 
 
     let maxArea = 24;
@@ -903,8 +902,9 @@ async function findExplorationTransactions(user, userData, outputNode) {
 
     let dataPlanets = await getPlanetsOfUser(user);
     //console.dir(dataPlanets)
-    let priorityPlanetIndex = planetPriority.findIndex(entry => entry.user == user)
-    let userPriorityPlanets = planetPriority[priorityPlanetIndex].planets;
+    //let priorityPlanetIndex = planetPriority.findIndex(entry => entry.user == user)
+    //let userPriorityPlanets = planetPriority[priorityPlanetIndex].planets;
+    let userPriorityPlanets = fetchUserPlanetPriorityData(user).planets;
 
     let planetData = [];
     let i=0;
@@ -982,7 +982,7 @@ async function findExplorationTransactions(user, userData, outputNode) {
                 let explorations = galaxyData[i].explore.filter(entry => entry.x == x && entry.y == y)
 
                 spaceInfo["underSearch"] = false;
-                spaceInfo["sniped"] = false;
+                spaceInfo["sniped"] = "none";
                 if (explorations.length > 0) {
                     spaceInfo["exploration"] = true;
 
@@ -1002,7 +1002,9 @@ async function findExplorationTransactions(user, userData, outputNode) {
                             snipeInfo["winner"] = "user";
                             if (snipeInfo.rivalArrival < snipeInfo.userArrival) {
                                 snipeInfo["winner"] = "rival"
-                                spaceInfo["sniped"] = true;
+                                spaceInfo["sniped"] = "lost";
+                            } else if (snipeInfo.rivalArrival >= snipeInfo.userArrival && spaceInfo["sniped"] != "lost") {
+                                spaceInfo["sniped"] = "opportunity";
                             }
                             snipes.push(snipeInfo)
                         }
@@ -1036,21 +1038,30 @@ async function findExplorationTransactions(user, userData, outputNode) {
         proposedExplorations[i] = proposedExplorations[i].filter(space => space.priorTransaction == false);
         //console.log(proposedExplorations[i])
         proposedExplorations[i] = proposedExplorations[i].filter(space => space.underSearch == false);
-        proposedExplorations[i] = proposedExplorations[i].filter(space => space.sniped == false);
+        proposedExplorations[i] = proposedExplorations[i].filter(space => space.sniped != "lost");
         proposedExplorations[i] = proposedExplorations[i].filter(space => space.returnHour > reopenHour);
         //console.log(proposedExplorations[i])
         proposedExplorations[i] = proposedExplorations[i].filter(space => space.planet == false);
         //console.log(proposedExplorations[i])
         proposedExplorations[i].sort((a, b) => a.distance - b.distance);
         //console.log(proposedExplorations[i])
-        proposedExplorations[i] = proposedExplorations[i].slice(0, availableExplorerMissions);
+        snipeOpportunities = proposedExplorations[i].filter(space => space.sniped == "opportunity");
+        snipeOpportunities = snipeOpportunities.slice(0, availableExplorerMissions);
+        console.log(snipeOpportunities)
+        nonSnipeExplorations = proposedExplorations[i].filter(space => space.sniped == "none");
+        console.log(nonSnipeExplorations)
+        nonSnipeExplorations = nonSnipeExplorations.slice(0, availableExplorerMissions - snipeOpportunities.length);
+        //proposedExplorations[i] = proposedExplorations[i].slice(0, availableExplorerMissions);
         //console.log(proposedExplorations[i])
-
+        proposedExplorations[i] = snipeOpportunities.concat(nonSnipeExplorations);
+        //console.log(proposedExplorations[i])
+        /*
         let reportingExplorations = space[i].filter(space => space.explored == false);
         reportingExplorations = reportingExplorations.filter(space => space.priorTransaction == false);
         reportingExplorations = reportingExplorations.filter(space => space.underSearch == false);
         reportingExplorations = reportingExplorations.filter(space => space.planet == false);
         reportingExplorations = reportingExplorations.slice(0, availableExplorerMissions);
+        */
 
         for (const proposal of proposedExplorations[i]) {
             let exploration = {};
@@ -1059,9 +1070,17 @@ async function findExplorationTransactions(user, userData, outputNode) {
             exploration.x = proposal.x;
             exploration.y = proposal.y;
             exploration.shipName = "explorership";
-            explorationTransactions.push(exploration)
+            exploration.sniped = proposal.sniped;
+            if (proposal.sniped == "opportunity") {
+                let opportunityCount = explorationTransactions.filter(transaction => transaction.sniped == "opportunity").length;
+                explorationTransactions.splice(opportunityCount, 0, exploration);
+                outputNode.innerHTML += exploration.type + " " + exploration.x + " " + exploration.y + " " + exploration.shipName + " " + proposal.distance + " --- SNIPE HAS PRIORITY OVER PLANET ORDER --- <br>";
+            } else {
+                explorationTransactions.push(exploration);
+                outputNode.innerHTML += exploration.type + " " + exploration.x + " " + exploration.y + " " + exploration.shipName + " " + proposal.distance + "<br>";
+            }
 
-            outputNode.innerHTML += exploration.type + " " + exploration.x + " " + exploration.y + " " + exploration.shipName + " " + proposal.distance + "<br>";
+
         }
 
         i+=1;

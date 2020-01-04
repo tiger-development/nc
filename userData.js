@@ -3,7 +3,7 @@ let userList = ["miniature-tiger", "tiger-zaps"]
 let userDataStore = []
 
 let planetPriorityDataStore = [
-    {user: "miniature-tiger", planets: ["P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-Z7M914SV034", "P-ZUEF2H4ZVFK", "P-ZSHCI4Y9BBK", "P-Z6NP7GS7LN4", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
+    {user: "miniature-tiger", planets: ["P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-Z7M914SV034", "P-ZUEF2H4ZVFK", "P-ZSHCI4Y9BBK", "P-ZG8IDE649Q8", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
     {user: "tiger-zaps", planets: ["P-ZS3RWN9D840", "P-ZXPZG03WPXC", "P-ZZA367LJYRK", "P-ZSJR1UCWGJK", "P-ZL1K8I8Y86O", "P-Z2A6EKIIC00", "P-ZKNJOCNKC0W", "P-Z142YAEQFO0", "P-ZE8TH46FVK0"], planetNames: []},
 ]
 
@@ -13,7 +13,8 @@ let minimumShipPriorityDataStore = [
     {user: "miniature-tiger", planets:
         [
             {id: "P-ZVLTZ1VY9LS", minimumShipPriority: 80}, // Rho(2) - ship2 only
-            {id: "P-ZTUFNYRJSIO", minimumShipPriority: 80}, // Beta(2) - ship2 and transporter2 only
+            {id: "P-ZTUFNYRJSIO", minimumShipPriority: 80}, // Beta - ship2 and transporter2 only
+            {id: "P-Z4QG9SYM1E8", minimumShipPriority: 80}, // Delta - ship2 only
             {id: "P-ZPMH4TWB6WW", minimumShipPriority: 99}, // Theta - ExII-Factory - explorer2 only
             {id: "P-Z9OF9M3G840", minimumShipPriority: 100}, // Eta - ExII-Base - no ship building
             {id: "P-Z5EHJS21S3K", minimumShipPriority: 100}, // Iota - ExII-Base - no ship building
