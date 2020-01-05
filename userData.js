@@ -19,7 +19,9 @@ let minimumShipPriorityDataStore = [
             {id: "P-Z9OF9M3G840", minimumShipPriority: 100}, // Eta - ExII-Base - no ship building
             {id: "P-Z5EHJS21S3K", minimumShipPriority: 100}, // Iota - ExII-Base - no ship building
             {id: "P-ZUEF2H4ZVFK", minimumShipPriority: 100}, // - Explorer / Base
-            {id: "P-ZJWCQN4SU00", minimumShipPriority: 100}, // - Explorer / Base
+            {id: "P-ZJWCQN4SU00", minimumShipPriority: 100},
+            {id: "P-ZJ9690WS03K", minimumShipPriority: 100}, // Xi - ExII-Base - no ship building
+
         ]
     },
     {user: "tiger-zaps", planets:
@@ -42,7 +44,7 @@ let minimumShipPriorityDataStore = [
 
 let doNotBuildDataStore = [
     {user: "miniature-tiger", planets:
-        ["P-ZVLTZ1VY9LS", "P-ZTUFNYRJSIO", "P-ZPMH4TWB6WW", "P-Z9OF9M3G840", "P-Z5EHJS21S3K", "P-ZUEF2H4ZVFK", "P-ZJWCQN4SU00"]
+        ["P-ZVLTZ1VY9LS", "P-ZTUFNYRJSIO", "P-ZPMH4TWB6WW", "P-Z9OF9M3G840", "P-Z5EHJS21S3K", "P-ZUEF2H4ZVFK", "P-ZJWCQN4SU00", "P-ZJ9690WS03K"]
     },
     {user: "tiger-zaps", planets:
         ["P-ZY9Q75PXWWW", "P-Z8JQAIQIU3K", "P-ZAF8WG5WM00", "P-ZR10UOAG7TS", "P-ZS3RWN9D840", "P-ZZA367LJYRK", "P-ZSJR1UCWGJK", "P-ZL1K8I8Y86O"]
@@ -64,7 +66,7 @@ let shipMarket = [
     {type: "cruiser2", version: 2, minPrice: 300},
     {type: "battlecruiser2", version: 2, minPrice: 580},
     {type: "carrier2", version: 2, minPrice: 5000},
-    {type: "dreadnought2", version: 2, minPrice: 10000}
+    //{type: "dreadnought2", version: 2, minPrice: 9000}
 ];
 
 let planetOrderForShipSales = [
