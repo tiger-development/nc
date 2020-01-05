@@ -1098,7 +1098,7 @@ async function findExplorationTransactions(user, userData, outputNode) {
 async function findMarketTrades(user, userData, outputNode) {
 
 
-
+    let priceFactor = 100000000;
 
     let planetData = [];
 
@@ -1108,12 +1108,15 @@ async function findMarketTrades(user, userData, outputNode) {
     let userSoldMarketData = [];
     let askPrices = [];
     let marketAsks = [];
+    let currentUserAsks = [];
 
     let planetShips = [];
     let userVersionZeroShips = [];
     let userVersionTwoShips = [];
     let userAllShipsForSale = [];
 
+    let marketCancelTransactions = [];
+    let marketAskTransactions = [];
     let marketTransactions = [];
     //planetData[i] = await getPlanetResources(planet.id)
 
@@ -1168,19 +1171,47 @@ async function findMarketTrades(user, userData, outputNode) {
     //console.dir(userVersionTwoShips)
     console.dir(userAllShipsForSale)
 
+    let marketAsksDesiredPerShipType = 20;
+
     let j=0
     for (const ship of shipMarket) {
         // Fetch current market prices and historic sale prices of all market and user
         activeMarketData[j] = await getMarketForShip(ship.type, 1, 0);
+        nonUserActiveMarketData = activeMarketData[j].filter(ship => ship.user != user);
         soldMarketData[j] = await getMarketForShip(ship.type, 0, 1);
+        nonUserSoldMarketData = soldMarketData[j].filter(ship => ship.user != user);
         userActiveMarketData[j] = await getMarketForShipAndUser(user, ship.type, 1, 0);
         userSoldMarketData[j] = await getMarketForShipAndUser(user, ship.type, 0, 1);
 
-        marketAsks[j] = determineMarketAsks(activeMarketData[j], soldMarketData[j], shipMarket[j])
+        marketAsks[j] = determineMarketAsks(nonUserActiveMarketData, nonUserSoldMarketData, shipMarket[j], marketAsksDesiredPerShipType)
+        //console.log(marketAsks[j])
+        currentUserAsks[j] = determineMarketAsks(userActiveMarketData[j], userSoldMarketData[j], shipMarket[j], 50)
+        //console.log(currentUserAsks[j])
+        console.log(userActiveMarketData[j])
         //console.log(activeMarketData[j])
         //console.log(soldMarketData[j])
         //console.log(userActiveMarketData[j])
         //console.log(userSoldMarketData[j])
+
+        for (const userAsk of userActiveMarketData[j]) {
+            let userAskPrice = (userAsk.price / priceFactor);
+            let marketAskIndex = marketAsks[j].findIndex(marketAsk => marketAsk.price == userAskPrice);
+            if (marketAskIndex == -1) {
+                // Create cancel transaction for user ask
+                let cancelInfo = {}
+                cancelInfo.type = "cancelAsk";
+                cancelInfo.askId = userAsk.id;
+                cancelInfo.shipType = userAsk.type;
+                marketCancelTransactions.push(cancelInfo);
+                outputNode.innerHTML += cancelInfo.type + " " + cancelInfo.shipType + " " + cancelInfo.askId + " " + userAskPrice + "<br>"
+            } else {
+                // Remove market ask from list
+                marketAsks[j].splice(marketAskIndex, 1);
+                // Do not create cancel transaction
+            }
+
+        }
+
 
         for (const ask of marketAsks[j]) {
             let shipIndex = userAllShipsForSale.findIndex(ship => ship.type == ask.shipType);
@@ -1190,25 +1221,17 @@ async function findMarketTrades(user, userData, outputNode) {
                 ask["haveShip"] == true
                 let ship = userAllShipsForSale.splice(shipIndex, 1);
                 ask["itemUID"] = ship[0].id;
-                outputNode.innerHTML += ask.shipType + " " + ask.itemUID + " " + ask.price + "<br>"
-                marketTransactions.push(ask)
+                outputNode.innerHTML += ask.type + " " + ask.shipType + " " + ask.itemUID + " " + ask.price + "<br>"
+                marketAskTransactions.push(ask)
             }
-
-
-
-
-            //console.log(ship, ship[0].id)
-
-
         }
-
         j+=1;
     }
 
     // If lots of ships at lowest price then match this
     // If only 3 ships at lowest price then match for match but sell rest at 1 below next price
 
-
+    marketTransactions = marketCancelTransactions.concat(marketAskTransactions);
     console.dir(marketTransactions);
     return marketTransactions;
 }
@@ -1231,7 +1254,7 @@ function summariseAndSort(data) {
 }
 
 // For one ship type
-function determineMarketAsks(activeMarketData, soldMarketData, shipMarket) {
+function determineMarketAsks(activeMarketData, soldMarketData, shipMarket, marketAsksDesiredPerShipType) {
     //for (const ask of activeMarketData) {
 
     //}
@@ -1240,7 +1263,7 @@ function determineMarketAsks(activeMarketData, soldMarketData, shipMarket) {
     let marketTransactions = [];
 
     let minPrice = shipMarket.minPrice * priceFactor;
-    console.log(shipMarket.type, minPrice)
+    //console.log(shipMarket.type, minPrice)
 
 
     // Summarise active market data for ship
@@ -1250,10 +1273,9 @@ function determineMarketAsks(activeMarketData, soldMarketData, shipMarket) {
 
     // Reduce market summary to number of totalTransactions
     let currentCount = 0;
-    let totalTransactions = 20;
     for (const level of activeMarketSummary) {
         level.price = Math.max(level.price, minPrice);
-        level.count = Math.min(level.count, totalTransactions - currentCount);
+        level.count = Math.min(level.count, marketAsksDesiredPerShipType - currentCount);
         currentCount += level.count
     }
     activeMarketSummary = activeMarketSummary.filter(level => level.count > 0);
@@ -1268,10 +1290,10 @@ function determineMarketAsks(activeMarketData, soldMarketData, shipMarket) {
             askInfo.category = "ship"
             askInfo.shipType = shipMarket.type;
             askInfo.version = shipMarket.version;
-            askInfo.itemUID = "";
             //askInfo.price = activeMarketSummary.price / priceFactor;
 
-            askInfo.price = (level.price / priceFactor) - 0.01;
+            //askInfo.price = (level.price / priceFactor) - 0.01;
+            askInfo.price = (level.price / priceFactor);
             marketTransactions.push(askInfo);
         }
     }

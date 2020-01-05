@@ -48,6 +48,22 @@ function ask(user, category, itemUID, price) {
     keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
 }
 
+
+function cancel_ask(user, askId) {
+    var scJson = {};
+    var scCommand = {};
+    // Create Command
+    scJson["username"] = user;
+    scJson["type"] = "cancel_ask";
+    scCommand["tr_var1"] = askId;
+
+    scJson["command"] = scCommand;
+    var finalJson = JSON.stringify(scJson);
+
+    keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName');
+}
+
+
 function exploreSpace(user, planetId, x, y, shipName) {
     var scJson = {};
     var scCommand = {};
@@ -86,7 +102,10 @@ function processKeychainTransactions(user, transactions, maxProcess) {
             exploreSpace(user, transaction.planetId, transaction.x, transaction.y, transaction.shipName)
         } else if (transaction.type == "sellShip") {
             ask(user, transaction.category, transaction.itemUID, transaction.price)
+        } else if (transaction.type == "cancelAsk") {
+            cancel_ask(user, transaction.askId)
         }
+
 
         if (transactionsToProcess > 0) {
             setTimeout(processKeychainTransactionWithDelay, 1000);
