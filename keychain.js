@@ -38,7 +38,7 @@ function ask(user, category, itemUID, price) {
     scJson["username"] = user;
     scJson["type"] = "ask";
     scCommand["tr_var1"] = category;
-    scCommand["tr_var2"] = uid;
+    scCommand["tr_var2"] = itemUID;
     scCommand["tr_var3"] = price;
     scCommand["tr_var4"] = "null";
 

@@ -50,21 +50,21 @@ let doNotBuildDataStore = [
 ]
 
 let shipMarket = [
-    {type: "corvette", version: 0, minPrice: 20},
-    {type: "frigate", version: 0, minPrice: 30},
-    {type: "destroyer", version: 0, minPrice: 40},
-    {type: "cruiser", version: 0, minPrice: 60},
-    {type: "battlecruiser", version: 0, minPrice: 150},
+    {type: "corvette", version: 0, minPrice: 15},
+    {type: "frigate", version: 0, minPrice: 20},
+    {type: "destroyer", version: 0, minPrice: 35},
+    {type: "cruiser", version: 0, minPrice: 40},
+    {type: "battlecruiser", version: 0, minPrice: 100},
     {type: "carrier", version: 0, minPrice: 300},
-    {type: "dreadnought", version: 0, minPrice: 900},
+    {type: "dreadnought", version: 0, minPrice: 700},
     {type: "cutter2", version: 2, minPrice: 40},
-    {type: "corvette2", version: 2, minPrice: 80},
-    {type: "frigate2", version: 2, minPrice: 120},
+    {type: "corvette2", version: 2, minPrice: 70},
+    {type: "frigate2", version: 2, minPrice: 100},
     {type: "destroyer2", version: 2, minPrice: 160},
     {type: "cruiser2", version: 2, minPrice: 300},
-    {type: "battlecruiser2", version: 2, minPrice: 500},
+    {type: "battlecruiser2", version: 2, minPrice: 580},
     {type: "carrier2", version: 2, minPrice: 5000},
-    {type: "dreadnought2", version: 2, minPrice: 9000}
+    {type: "dreadnought2", version: 2, minPrice: 10000}
 ];
 
 let planetOrderForShipSales = [
