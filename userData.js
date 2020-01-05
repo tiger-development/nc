@@ -49,6 +49,31 @@ let doNotBuildDataStore = [
     },
 ]
 
+let shipMarket = [
+    {type: "corvette", version: 0, minPrice: 20},
+    {type: "frigate", version: 0, minPrice: 30},
+    {type: "destroyer", version: 0, minPrice: 40},
+    {type: "cruiser", version: 0, minPrice: 60},
+    {type: "battlecruiser", version: 0, minPrice: 150},
+    {type: "carrier", version: 0, minPrice: 300},
+    {type: "dreadnought", version: 0, minPrice: 900},
+    {type: "cutter2", version: 2, minPrice: 40},
+    {type: "corvette2", version: 2, minPrice: 80},
+    {type: "frigate2", version: 2, minPrice: 120},
+    {type: "destroyer2", version: 2, minPrice: 160},
+    {type: "cruiser2", version: 2, minPrice: 300},
+    {type: "battlecruiser2", version: 2, minPrice: 500},
+    {type: "carrier2", version: 2, minPrice: 5000},
+    {type: "dreadnought2", version: 2, minPrice: 9000}
+];
+
+let planetOrderForShipSales = [
+    // tiger-zaps
+    // "Alpha", "Epsilon", "Zeta", "Theta", "Rho", "Sigma"
+    // "Pi", "Kappa", "Beta", "Rho", "Sigma", "Delta"
+    {user: "tiger-zaps", version0: ["P-ZCBO9MBOJ2O", "P-ZKEAGJ7U4LC", "P-ZF6H61862UO", "P-ZHC7OXN5PIO", "P-Z1T7TSC5EZ4", "P-ZI65C8IRYY8"], version2: ["P-Z8JQAIQIU3K", "P-ZAF8WG5WM00", "P-ZTNYF56W2VK", "P-Z1T7TSC5EZ4", "P-ZI65C8IRYY8", "P-ZY9Q75PXWWW"]},
+];
+
 
 async function createUserData(user) {
     // ADD RESTRICTION ON SHIPBUILDING FOR PLANETS WITH BUILDINGS BELOW LEVEL 18 (EXCL SHIELD)
@@ -108,4 +133,13 @@ function fetchDoNotBuildData(user) {
 function fetchMinimumShipPriorityData(user) {
     let userIndex = minimumShipPriorityDataStore.findIndex(data => data.user == user);
     return minimumShipPriorityDataStore[userIndex];
+}
+
+function findIndexInShipMarket(shipType) {
+    return  shipMarket.findIndex(ship => ship.type == shipType);
+}
+
+function fetchUserPlanetOrderForShipSales(user) {
+    let userIndex = planetOrderForShipSales.findIndex(data => data.user == user);
+    return planetOrderForShipSales[userIndex];
 }

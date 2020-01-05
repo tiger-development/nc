@@ -84,6 +84,8 @@ function processKeychainTransactions(user, transactions, maxProcess) {
             buildShip(user, transaction.planetId, transaction.name)
         } else if (transaction.type == "explorespace") {
             exploreSpace(user, transaction.planetId, transaction.x, transaction.y, transaction.shipName)
+        } else if (transaction.type == "sellShip") {
+            ask(user, transaction.category, transaction.itemUID, transaction.price)
         }
 
         if (transactionsToProcess > 0) {

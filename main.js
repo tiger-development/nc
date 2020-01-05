@@ -231,6 +231,10 @@ async function runLoginMission(user, userData, mission, maxProcess, outputNode) 
         console.log("runLoginMission - send explorers")
         let explorationTransactions = await findExplorationTransactions(user, userData, outputNode)
         processKeychainTransactions(user, explorationTransactions, maxProcess);
+    } else if (mission == "sell ships") {
+        console.log("runLoginMission - sell ships")
+        let askTransactions = await findMarketTrades(user, userData, outputNode)
+        processKeychainTransactions(user, askTransactions, maxProcess);
     }
 }
 
@@ -1093,31 +1097,6 @@ async function findExplorationTransactions(user, userData, outputNode) {
 
 async function findMarketTrades(user, userData, outputNode) {
 
-    let shipMarket = [
-        //{type: "corvette", minPrice: 20},
-        {type: "frigate", version: 0, minPrice: 30},
-        {type: "destroyer", version: 0, minPrice: 40},
-        {type: "cruiser", version: 0, minPrice: 60},
-        {type: "battlecruiser", version: 0, minPrice: 150},
-        {type: "carrier", version: 0, minPrice: 300},
-        {type: "dreadnought", version: 0, minPrice: 900},
-        {type: "cutter2", version: 2, minPrice: 40},
-        {type: "corvette2", version: 2, minPrice: 80},
-        {type: "frigate2", version: 2, minPrice: 120},
-        {type: "destroyer2", version: 2, minPrice: 160},
-        {type: "cruiser2", version: 2, minPrice: 300},
-        {type: "battlecruiser2", version: 2, minPrice: 500},
-        {type: "carrier2", version: 2, minPrice: 5000},
-        {type: "dreadnought2", version: 2, minPrice: 9000}
-    ];
-
-    function findIndexInShipMarket(shipType) {
-        return  shipMarket.findIndex(ship => ship.type == shipType);
-    }
-
-    let planetOrderForShipSales = [
-        {user: "tiger-zaps", version0: ["Alpha", "Epsilon", "Zeta", "Theta", "Rho", "Sigma"], version2: ["Pi", "Kappa", "Beta", "Rho", "Sigma", "Delta"]},
-     ]
 
 
 
@@ -1131,29 +1110,96 @@ async function findMarketTrades(user, userData, outputNode) {
     let marketAsks = [];
 
     let planetShips = [];
-    let allShips = [];
+    let userVersionZeroShips = [];
+    let userVersionTwoShips = [];
+    let userAllShipsForSale = [];
 
     let marketTransactions = [];
     //planetData[i] = await getPlanetResources(planet.id)
 
+    // Fetch ships for sale on planets marked for ship sale
+    let dataPlanets = await getPlanetsOfUser(user);
+    let userPlanetOrderForShipSales = fetchUserPlanetOrderForShipSales(user);
+    salePlanets = dataPlanets.planets.filter(planet => userPlanetOrderForShipSales.version0.includes(planet.id) || userPlanetOrderForShipSales.version2.includes(planet.id));
+    console.log(salePlanets)
+    //salePlanets = salePlanets.map(planet => ({...planet, version0: false, version2: false}));
+    //for (const planet of salePlanets) {
+
+    /*
+    saleZeroPlanets = dataPlanets.planets.filter(planet => userPlanetOrderForShipSales.version0.includes(planet.id));
+    saleZeroPlanets = saleZeroPlanets.map(planet => ({...planet, versionZero: true}));
+    saleTwoPlanets = dataPlanets.planets.filter(planet => userPlanetOrderForShipSales.version2.includes(planet.id));
+    saleTwoPlanets = saleTwoPlanets.map(planet => ({...planet, version: 2}));
+    salePlanets = saleZeroPlanets.concat(saleTwoPlanets);
+    console.log(salePlanets)
+    */
+
+    let i = 0;
+
+    for (const planet of salePlanets) {
+        console.log(user, planet.id)
+        // Fetch ships on planet
+        planetShips[i] = await getPlanetShips(user, planet.id);
+        // Filter to ships on "shipMarket" sale list
+        let planetShipsForMarket = planetShips[i].filter(ship => findIndexInShipMarket(ship.type) != -1);
+        // Filter out ships already sold
+        planetShipsForMarket = planetShipsForMarket.filter(ship => ship.for_sale == 0);
+        // Filter out ships on missions
+        planetShipsForMarket = planetShipsForMarket.filter(ship => ship.busy < launchTime/1000);
+        // Crop ships to useful info only, including ship version tyep
+        planetShipsForMarket = planetShipsForMarket.map(ship => ({type: ship.type, id: ship.id, planet: planet.id, version: shipMarket[findIndexInShipMarket(ship.type)].version}))
+        //usefulShips = usefulShips.map(ship => ({...ship, priority: shipPriority[ship.type]}))
+        console.dir(planetShipsForMarket)
+
+        if (userPlanetOrderForShipSales.version0.includes(planet.id)) {
+            let planetVersionZeroShips = planetShipsForMarket.filter(ship => ship.version == 0);
+            //userVersionZeroShips = userVersionZeroShips.concat(planetVersionZeroShips);
+            userAllShipsForSale = userAllShipsForSale.concat(planetVersionZeroShips);
+        }
+
+        if (userPlanetOrderForShipSales.version2.includes(planet.id)) {
+            let planetVersionTwoShips = planetShipsForMarket.filter(ship => ship.version == 2);
+            //userVersionTwoShips= userVersionTwoShips.concat(planetVersionTwoShips);
+            userAllShipsForSale = userAllShipsForSale.concat(planetVersionTwoShips);
+        }
+        i += 1
+    }
+    //console.dir(userVersionZeroShips)
+    //console.dir(userVersionTwoShips)
+    console.dir(userAllShipsForSale)
+
     let j=0
     for (const ship of shipMarket) {
-        if (j==0) {
-            activeMarketData[j] = await getMarketForShip(ship.type, 1, 0);
-            soldMarketData[j] = await getMarketForShip(ship.type, 0, 1);
-            userActiveMarketData[j] = await getMarketForShipAndUser(user, ship.type, 1, 0);
-            userSoldMarketData[j] = await getMarketForShipAndUser(user, ship.type, 0, 1);
-            marketAsks[j] = determineMarketAsks(activeMarketData[j], soldMarketData[j], shipMarket[j])
-            //console.log(activeMarketData[j])
-            //console.log(soldMarketData[j])
-            //console.log(userActiveMarketData[j])
-            //console.log(userSoldMarketData[j])
+        // Fetch current market prices and historic sale prices of all market and user
+        activeMarketData[j] = await getMarketForShip(ship.type, 1, 0);
+        soldMarketData[j] = await getMarketForShip(ship.type, 0, 1);
+        userActiveMarketData[j] = await getMarketForShipAndUser(user, ship.type, 1, 0);
+        userSoldMarketData[j] = await getMarketForShipAndUser(user, ship.type, 0, 1);
 
-            for (const ask of marketAsks[j]) {
+        marketAsks[j] = determineMarketAsks(activeMarketData[j], soldMarketData[j], shipMarket[j])
+        //console.log(activeMarketData[j])
+        //console.log(soldMarketData[j])
+        //console.log(userActiveMarketData[j])
+        //console.log(userSoldMarketData[j])
 
-                outputNode.innerHTML += ask.category + " " + ask.type + " " + ask.price + "<br>"
+        for (const ask of marketAsks[j]) {
+            let shipIndex = userAllShipsForSale.findIndex(ship => ship.type == ask.shipType);
+            if (shipIndex == -1) {
+                ask["haveShip"] == false
+            } else {
+                ask["haveShip"] == true
+                let ship = userAllShipsForSale.splice(shipIndex, 1);
+                ask["itemUID"] = ship[0].id;
+                outputNode.innerHTML += ask.shipType + " " + ask.itemUID + " " + ask.price + "<br>"
                 marketTransactions.push(ask)
             }
+
+
+
+
+            //console.log(ship, ship[0].id)
+
+
         }
 
         j+=1;
@@ -1162,25 +1208,8 @@ async function findMarketTrades(user, userData, outputNode) {
     // If lots of ships at lowest price then match this
     // If only 3 ships at lowest price then match for match but sell rest at 1 below next price
 
-    let dataPlanets = await getPlanetsOfUser(user);
-    let i = 0;
-    for (const planet of dataPlanets.planets) {
-        if (i<5) {
-            console.log(user, planet.id)
-            planetShips[i] = await getPlanetShips(user, planet.id);
-            let usefulShips = planetShips[i].filter(ship => findIndexInShipMarket(ship.type) != -1);
-            usefulShips = usefulShips.filter(ship => ship.for_sale == 0);
-            usefulShips = usefulShips.filter(ship => ship.busy < launchTime/1000);
-            usefulShips = usefulShips.map(ship => ({type: ship.type, id: ship.id, planet: planet.id, version: shipMarket[findIndexInShipMarket(ship.type)].version}))
-            //usefulShips = usefulShips.map(ship => ({...ship, priority: shipPriority[ship.type]}))
-            allShips += usefulShips;
-            console.dir(usefulShips)
-        }
 
-
-        i += 1
-    }
-
+    console.dir(marketTransactions);
     return marketTransactions;
 }
 
@@ -1201,20 +1230,25 @@ function summariseAndSort(data) {
     return summary;
 }
 
+// For one ship type
 function determineMarketAsks(activeMarketData, soldMarketData, shipMarket) {
     //for (const ask of activeMarketData) {
 
     //}
+
     let priceFactor = 100000000;
-    let minPrice = shipMarket.minPrice * priceFactor;
-    console.log(shipMarket.type, minPrice)
-    let reducedActiveMarketData = activeMarketData.map(ask => ({price: ask.price}))
     let marketTransactions = [];
 
+    let minPrice = shipMarket.minPrice * priceFactor;
+    console.log(shipMarket.type, minPrice)
 
+
+    // Summarise active market data for ship
+    let reducedActiveMarketData = activeMarketData.map(ask => ({price: ask.price}))
     let activeMarketSummary = summariseAndSort(reducedActiveMarketData);
     console.dir(activeMarketSummary)
 
+    // Reduce market summary to number of totalTransactions
     let currentCount = 0;
     let totalTransactions = 20;
     for (const level of activeMarketSummary) {
@@ -1222,23 +1256,25 @@ function determineMarketAsks(activeMarketData, soldMarketData, shipMarket) {
         level.count = Math.min(level.count, totalTransactions - currentCount);
         currentCount += level.count
     }
-
     activeMarketSummary = activeMarketSummary.filter(level => level.count > 0);
+
     //let askPrices = activeMarketSummary.map(ask => ({price: Math.max(ask.price, minPrice), count: ask.count-1}))
 
     for (const level of activeMarketSummary) {
         for (i = 0; i < level.count; i+=1) {
             // Create market transaction and push to transaction list
             let askInfo = {}
+            askInfo.type = "sellShip";
             askInfo.category = "ship"
-            askInfo.type = shipMarket.type
+            askInfo.shipType = shipMarket.type;
+            askInfo.version = shipMarket.version;
             askInfo.itemUID = "";
             //askInfo.price = activeMarketSummary.price / priceFactor;
-            askInfo.price = level.price / priceFactor;
+
+            askInfo.price = (level.price / priceFactor) - 0.01;
             marketTransactions.push(askInfo);
         }
     }
-
 
 
 
@@ -1269,7 +1305,7 @@ function determineMarketAsks(activeMarketData, soldMarketData, shipMarket) {
     }
     */
 
-    console.dir(activeMarketSummary)
+    //console.dir(marketTransactions)
     //console.dir(askPrices)
     return marketTransactions;
 }
