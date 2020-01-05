@@ -18,6 +18,8 @@ let minimumShipPriorityDataStore = [
             {id: "P-ZPMH4TWB6WW", minimumShipPriority: 99}, // Theta - ExII-Factory - explorer2 only
             {id: "P-Z9OF9M3G840", minimumShipPriority: 100}, // Eta - ExII-Base - no ship building
             {id: "P-Z5EHJS21S3K", minimumShipPriority: 100}, // Iota - ExII-Base - no ship building
+            {id: "P-ZUEF2H4ZVFK", minimumShipPriority: 100}, // - Explorer / Base
+            {id: "P-ZJWCQN4SU00", minimumShipPriority: 100}, // - Explorer / Base
         ]
     },
     {user: "tiger-zaps", planets:
@@ -30,16 +32,20 @@ let minimumShipPriorityDataStore = [
             {id: "P-ZQA36M3JUGW", minimumShipPriority: 100}, // ExII-Base2 - no ship building
             {id: "P-ZIIV5B7IU28", minimumShipPriority: 100}, // ExII-Base3 - no ship building
             {id: "P-ZLKBPD54FM8", minimumShipPriority: 100}, // ExII-Base4 - no ship building
+            {id: "P-ZS3RWN9D840", minimumShipPriority: 100}, // Ap61 - Explorer / Base
+            {id: "P-ZZA367LJYRK", minimumShipPriority: 100}, // Ap59 - Explorer / Base
+            {id: "P-ZSJR1UCWGJK", minimumShipPriority: 100}, // Ap57 - Explorer / Base
+            {id: "P-ZL1K8I8Y86O", minimumShipPriority: 100}, // Ap56 - Explorer / Base
         ]
     },
 ]
 
 let doNotBuildDataStore = [
     {user: "miniature-tiger", planets:
-        ["P-ZVLTZ1VY9LS", "P-ZTUFNYRJSIO", "P-ZPMH4TWB6WW", "P-Z9OF9M3G840", "P-Z5EHJS21S3K"]
+        ["P-ZVLTZ1VY9LS", "P-ZTUFNYRJSIO", "P-ZPMH4TWB6WW", "P-Z9OF9M3G840", "P-Z5EHJS21S3K", "P-ZUEF2H4ZVFK", "P-ZJWCQN4SU00"]
     },
     {user: "tiger-zaps", planets:
-        ["P-ZY9Q75PXWWW", "P-Z8JQAIQIU3K", "P-ZAF8WG5WM00", "P-ZR10UOAG7TS"]
+        ["P-ZY9Q75PXWWW", "P-Z8JQAIQIU3K", "P-ZAF8WG5WM00", "P-ZR10UOAG7TS", "P-ZS3RWN9D840", "P-ZZA367LJYRK", "P-ZSJR1UCWGJK", "P-ZL1K8I8Y86O"]
     },
 ]
 
