@@ -73,7 +73,7 @@ let planetOrderForShipSales = [
     // tiger-zaps
     // "Alpha", "Epsilon", "Zeta", "Theta", "Rho", "Sigma"
     // "Pi", "Kappa", "Beta", "Rho", "Sigma", "Delta"
-    {user: "tiger-zaps", version0: ["P-ZCBO9MBOJ2O", "P-ZKEAGJ7U4LC", "P-ZF6H61862UO", "P-ZHC7OXN5PIO", "P-Z1T7TSC5EZ4", "P-ZI65C8IRYY8"], version2: ["P-Z8JQAIQIU3K", "P-ZAF8WG5WM00", "P-ZTNYF56W2VK", "P-Z1T7TSC5EZ4", "P-ZI65C8IRYY8", "P-ZY9Q75PXWWW"]},
+    {user: "tiger-zaps", version0: ["P-ZCBO9MBOJ2O", "P-ZKEAGJ7U4LC", "P-ZF6H61862UO", "P-ZHC7OXN5PIO", "P-Z1T7TSC5EZ4", "P-ZI65C8IRYY8", "P-Z3OROQ7NVC0", "P-ZK5N7AA9HXC", "P-Z7QZW0I1B4G", "P-ZT3JJ1U11A8"], version2: ["P-Z8JQAIQIU3K", "P-ZAF8WG5WM00", "P-ZTNYF56W2VK", "P-Z1T7TSC5EZ4", "P-ZI65C8IRYY8", "P-ZY9Q75PXWWW", "P-Z3OROQ7NVC0"]},
 ];
 
 
