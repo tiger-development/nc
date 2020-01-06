@@ -254,6 +254,8 @@ async function runInfoMission(user, userData, mission, outputNode) {
         let marketInfo = await findMarketTrades(user, userData, outputNode)
     } else if (mission == "send explorers") {
         let explorationTransactions = await findExplorationTransactions(user, userData, outputNode)
+    } else if (mission == "explorerII scoping") {
+        let explorationTwoTransactions = await findExplorerTwoTransactions(user, userData, outputNode)
     } else if (mission == "define strategy") {
         await defineStrategy(user, outputNode)
     }
@@ -456,6 +458,13 @@ async function getUserMissions(user, active) {
     let data = await response.json();
     return data
 }
+
+async function getLimitedUserMissions(user, limit) {
+    let response = await fetch("https://api.nextcolony.io/loadfleetmission?user=" + user + "&limit=" + limit);
+    let data = await response.json();
+    return data
+}
+
 
 async function getPlanetMissionInfo(user, planetId) {
     let response = await fetch("https://api.nextcolony.io/missioninfo?user=" + user + "&planet=" + planetId);
@@ -879,6 +888,78 @@ async function findShipsToBuild(user, userData, outputNode) {
     return shipsTransactions;
 }
 
+
+async function findExplorerTwoTransactions(user, userData, outputNode) {
+
+    let planetFleetInfo = [];
+    let planetMissionInfo = [];
+    //let planetUserMissions = [];
+
+    let userMissions = await getLimitedUserMissions(user, 100)
+    //let finishedMissions = await getUserMissions(user, 0)
+    //let userMissions = activeMissions.concat(finishedMissions)
+
+    console.dir(userMissions)
+    //console.dir(finishedMissions)
+    //console.dir(userMissions)
+    //for (const mission of userMissions) {
+
+
+        //let planetCoords = [mission.start_x, mission.start_y]
+        //let spaceCoords = [mission.end_x, mission.end_y]
+        //let missionDistance = distance(planetCoords, spaceCoords)
+
+    //}
+
+    let i=0;
+    let dataPlanets = await getPlanetsOfUser(user);
+    for (const dataPlanet of dataPlanets.planets) {
+
+        let planetUserMissions = userMissions.filter(mission => mission.from_planet.id == dataPlanet.id)
+        let planetExplorerTwoMissions = planetUserMissions.filter(mission => Object.keys(mission.ships).includes("explorership1"))
+
+        planetFleetInfo[i] = await getPlanetFleet(user, dataPlanet.id)
+        let explorerFleetIndex = planetFleetInfo[i].findIndex(fleet => fleet.type == "explorership1");
+        let explorersAvailable = 0;
+        if (explorerFleetIndex != -1) {
+            explorersAvailable = planetFleetInfo[i][explorerFleetIndex].quantity;
+        }
+
+        if (explorersAvailable > 0) {
+            planetMissionInfo[i] = await getPlanetMissionInfo(user, dataPlanet.id);
+            let availableMissions = planetMissionInfo[i].planet_unused;
+            let availableExplorerMissions = Math.min(availableMissions, explorersAvailable);
+
+            if (i==0) {
+                userAvailableMissions = planetMissionInfo[i].user_unused;
+                outputNode.innerHTML += "<br>";
+                outputNode.innerHTML += user + " available missions: " + userAvailableMissions + "<br>";
+            }
+
+            outputNode.innerHTML += "<br>";
+            outputNode.innerHTML += dataPlanet.id + " " + dataPlanet.name + ":<br>";
+            outputNode.innerHTML += "available missions: " + availableMissions + " available explorers: " + explorersAvailable + ".<br>";
+
+            if (planetExplorerTwoMissions.length > 0) {
+                outputNode.innerHTML += "recent ExplorerII missions:<br>";
+
+                for (const mission of planetExplorerTwoMissions) {
+                    let planetCoords = [mission.start_x, mission.start_y]
+                    let spaceCoords = [mission.end_x, mission.end_y]
+                    let missionDistance = distance(planetCoords, spaceCoords)
+                    outputNode.innerHTML += "x: " + mission.end_x + " y: " + mission.end_y + " distance: " + missionDistance + " <br>";
+                }
+            }
+
+        }
+        i+=1;
+    }
+
+}
+
+
+
+
 async function findExplorationTransactions(user, userData, outputNode) {
 
     //let planetPriority = [
@@ -888,7 +969,7 @@ async function findExplorationTransactions(user, userData, outputNode) {
     //]
 
 
-    let maxArea = 24;
+    let maxArea = 36;
     let closeHour = 0;
     let reopenHour = 7;
 
@@ -981,7 +1062,6 @@ async function findExplorationTransactions(user, userData, outputNode) {
                 if (exploredIndex == -1) {
                     spaceInfo["explored"] = false;
                 }
-
 
                 let explorations = galaxyData[i].explore.filter(entry => entry.x == x && entry.y == y)
 

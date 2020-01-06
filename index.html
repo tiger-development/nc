@@ -39,30 +39,45 @@
         Transaction Missions:
     </div>
     <br>
-    Maximum transactions: <input type="number" id="numberOfTransactions" value="1"> <br>
+
+
+    <!--
     Planets to run:
     <select id="missionPlanet">
         <option>all</option>
     </select>
+    !-->
+
+
+    <div>
+        Approximate coordinates of ExplorerII mission: <br>
+        x: <input type="number" id="xCoordinate" value="420"> y: <input type="number" id="xCoordinate" value="54">
+    </div>
     <br>
-    Mission:
-    <select id="loginMissionSelect">
-        <option>send explorers</option>
-        <option>upgrade buildings</option>
-        <option>build ships</option>
-        <option>sell ships</option>
-        <option>check</option>
-    </select>
 
 
-
+    <div>
+        Maximum transactions: <input type="number" id="numberOfTransactions" value="1"> <br>
+    </div>
+    <div>
+        Mission:
+        <select id="loginMissionSelect">
+            <option>send explorers</option>
+            <option>upgrade buildings</option>
+            <option>build ships</option>
+            <option>sell ships</option>
+            <option>check</option>
+        </select>
+    </div>
     <button id="runLoginMission">Run Mission</button><br><br>
+
 
     <div>
         Information searches:
     </div>
     <br>
     <select id="infoMissionSelect">
+        <option>explorerII scoping</option>
         <option>market</option>
         <option>define strategy</option>
         <option>send explorers</option>
