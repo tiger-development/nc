@@ -28,6 +28,7 @@ window.addEventListener('load', async (event) => {
     var infoMissionSelect = document.getElementById("infoMissionSelect")
 
     const maxProcessField = document.getElementById("numberOfTransactions")
+    const explorerRangeField = document.getElementById("explorerRange")
 
     const outputNode = document.getElementById('output');
 
@@ -118,9 +119,10 @@ window.addEventListener('load', async (event) => {
 
         const mission = loginMissionSelect.value;
         const maxProcess = maxProcessField.value;
+        const explorerRange = explorerRangeField.value;
 
         if (user && logInStatus == "keychain") {
-            runLoginMission(user, userData, mission, maxProcess, outputNode);
+            runLoginMission(user, userData, mission, maxProcess, explorerRange, outputNode);
         } else {
             console.log('User not logged in with keychain.');
         }
@@ -131,8 +133,10 @@ window.addEventListener('load', async (event) => {
         e.preventDefault();
 
         const mission = infoMissionSelect.value;
+        const explorerRange = explorerRangeField.value;
+
         if (user && (logInStatus == "setForInfo" || logInStatus == "keychain")) {
-            runInfoMission(user, userData, mission, outputNode);
+            runInfoMission(user, userData, mission, explorerRange, outputNode);
         } else {
             console.log('User not logged in for info.');
         }
@@ -208,7 +212,7 @@ let workFlowMonitor = true
 
 
 
-async function runLoginMission(user, userData, mission, maxProcess, outputNode) {
+async function runLoginMission(user, userData, mission, maxProcess, explorerRange, outputNode) {
     outputNode.innerHTML = "";
     missionLaunchTime = Date.now();
 
@@ -229,7 +233,7 @@ async function runLoginMission(user, userData, mission, maxProcess, outputNode) 
         //upgradeBuilding(user, planetId, buildingName)
     } else if (mission == "send explorers") {
         console.log("runLoginMission - send explorers")
-        let explorationTransactions = await findExplorationTransactions(user, userData, outputNode)
+        let explorationTransactions = await findExplorationTransactions(user, userData, explorerRange, outputNode)
         processKeychainTransactions(user, explorationTransactions, maxProcess);
     } else if (mission == "sell ships") {
         console.log("runLoginMission - sell ships")
@@ -238,7 +242,7 @@ async function runLoginMission(user, userData, mission, maxProcess, outputNode) 
     }
 }
 
-async function runInfoMission(user, userData, mission, outputNode) {
+async function runInfoMission(user, userData, mission, explorerRange, outputNode) {
     outputNode.innerHTML = "";
     missionLaunchTime = Date.now();
 
@@ -253,9 +257,9 @@ async function runInfoMission(user, userData, mission, outputNode) {
     } else if (mission == "market") {
         let marketInfo = await findMarketTrades(user, userData, outputNode)
     } else if (mission == "send explorers") {
-        let explorationTransactions = await findExplorationTransactions(user, userData, outputNode)
+        let explorationTransactions = await findExplorationTransactions(user, userData, explorerRange, outputNode)
     } else if (mission == "explorerII scoping") {
-        let explorationTwoTransactions = await findExplorerTwoTransactions(user, userData, outputNode)
+        let explorationTwoTransactions = await findExplorerTwoTransactions(user, userData, explorerRange, outputNode)
     } else if (mission == "define strategy") {
         await defineStrategy(user, outputNode)
     }
@@ -889,7 +893,7 @@ async function findShipsToBuild(user, userData, outputNode) {
 }
 
 
-async function findExplorerTwoTransactions(user, userData, outputNode) {
+async function findExplorerTwoTransactions(user, userData, explorerRange, outputNode) {
 
     let planetFleetInfo = [];
     let planetMissionInfo = [];
@@ -960,7 +964,7 @@ async function findExplorerTwoTransactions(user, userData, outputNode) {
 
 
 
-async function findExplorationTransactions(user, userData, outputNode) {
+async function findExplorationTransactions(user, userData, explorerRange, outputNode) {
 
     //let planetPriority = [
     //    {user: "miniature-tiger", planets: ["P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-Z7M914SV034", "P-ZUEF2H4ZVFK", "P-ZSHCI4Y9BBK", "P-Z6NP7GS7LN4", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
@@ -968,8 +972,7 @@ async function findExplorationTransactions(user, userData, outputNode) {
         //{user: "tiger-zaps", planets: ["P-ZZA367LJYRK"], planetNames: []},
     //]
 
-
-    let maxArea = 24;
+    console.log("explorerRange", explorerRange)
     let closeHour = 0;
     let reopenHour = 7;
 
@@ -1023,7 +1026,7 @@ async function findExplorationTransactions(user, userData, outputNode) {
         outputNode.innerHTML += dataPlanet.id + " " + dataPlanet.name + ":<br>";
         outputNode.innerHTML += "available missions: " + availableMissions + " available explorers: " + explorersAvailable + ".<br>";
 
-        galaxyData[i] = await getGalaxy(planetCoords[0], planetCoords[1], maxArea, maxArea);
+        galaxyData[i] = await getGalaxy(planetCoords[0], planetCoords[1], explorerRange, explorerRange);
         console.dir(galaxyData[i])
         space[i] = [];
         let xmin = galaxyData[i].area.xmin;
