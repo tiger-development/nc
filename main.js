@@ -969,7 +969,7 @@ async function findExplorationTransactions(user, userData, outputNode) {
     //]
 
 
-    let maxArea = 36;
+    let maxArea = 24;
     let closeHour = 0;
     let reopenHour = 7;
 
