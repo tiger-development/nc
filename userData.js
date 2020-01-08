@@ -60,7 +60,7 @@ let shipMarket = [
     {type: "cruiser", version: 0, minPrice: 40},
     {type: "battlecruiser", version: 0, minPrice: 100},
     {type: "carrier", version: 0, minPrice: 300},
-    {type: "dreadnought", version: 0, minPrice: 700},
+    {type: "dreadnought", version: 0, minPrice: 795},
     {type: "cutter2", version: 2, minPrice: 40},
     {type: "corvette2", version: 2, minPrice: 70},
     {type: "frigate2", version: 2, minPrice: 100},
