@@ -3,7 +3,7 @@ let userList = ["miniature-tiger", "tiger-zaps"]
 let userDataStore = []
 
 let planetPriorityDataStore = [
-    {user: "miniature-tiger", planets: ["P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-ZUEF2H4ZVFK", "P-Z8KKOX2ZOQO", "P-Z7M914SV034", "P-ZSHCI4Y9BBK", "P-ZG8IDE649Q8", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
+    {user: "miniature-tiger", planets: ["P-Z6NP7GS7LN4", "P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-ZUEF2H4ZVFK", "P-Z8KKOX2ZOQO", "P-Z7M914SV034", "P-ZSHCI4Y9BBK", "P-ZG8IDE649Q8", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
     {user: "tiger-zaps", planets: ["P-ZF2GU2MGRWG", "P-ZS3RWN9D840", "P-ZXPZG03WPXC", "P-ZZA367LJYRK", "P-ZSJR1UCWGJK", "P-ZL1K8I8Y86O", "P-Z2A6EKIIC00", "P-ZKNJOCNKC0W", "P-Z142YAEQFO0", "P-ZE8TH46FVK0"], planetNames: []},
 ]
 
@@ -45,8 +45,8 @@ let doNotBuildDataStore = [
         ["P-ZVLTZ1VY9LS", "P-ZTUFNYRJSIO", "P-ZPMH4TWB6WW", "P-Z9OF9M3G840", "P-Z5EHJS21S3K", "P-ZUEF2H4ZVFK", "P-ZJWCQN4SU00", "P-ZJ9690WS03K"]
     },
     {user: "tiger-zaps", planets:
-        // Delta, Pi, Kappa, ExII-Factory1, new Ap58
-        ["P-ZY9Q75PXWWW", "P-Z8JQAIQIU3K", "P-ZAF8WG5WM00", "P-ZR10UOAG7TS", "P-ZF2GU2MGRWG"]
+        // Delta, Pi, Kappa, ExII-Factory1
+        ["P-ZY9Q75PXWWW", "P-Z8JQAIQIU3K", "P-ZAF8WG5WM00", "P-ZR10UOAG7TS"]
     },
 ]
 
