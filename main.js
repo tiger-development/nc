@@ -845,7 +845,7 @@ async function findShipsToBuild(user, userData, outputNode) {
         carrier2: 87,
         transportship2: 91,
         dreadnought2: 92,
-        explorer2: 99
+        explorership1: 99
     }
 
     let planetData = [];
