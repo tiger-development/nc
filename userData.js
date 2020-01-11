@@ -48,8 +48,8 @@ let doNotBuildDataStore = [
         ["P-ZVLTZ1VY9LS", "P-ZTUFNYRJSIO", "P-ZPMH4TWB6WW", "P-Z9OF9M3G840", "P-Z5EHJS21S3K", "P-ZUEF2H4ZVFK", "P-ZJWCQN4SU00", "P-ZJ9690WS03K"]
     },
     {user: "tiger-zaps", planets:
-        // Delta, Pi, Kappa, ExII-Factory1
-        ["P-ZY9Q75PXWWW", "P-Z8JQAIQIU3K", "P-ZAF8WG5WM00", "P-ZR10UOAG7TS"]
+        // Delta, Pi, Kappa, ExII-Factory1, Ap-54, Ap-55
+        ["P-ZY9Q75PXWWW", "P-Z8JQAIQIU3K", "P-ZAF8WG5WM00", "P-ZR10UOAG7TS", "P-ZE8TH46FVK0", "P-Z142YAEQFO0"]
     },
 ]
 
