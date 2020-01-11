@@ -35,6 +35,8 @@ let minimumShipPriorityDataStore = [
             {id: "P-ZIIV5B7IU28", minimumShipPriority: 100}, // ExII-Base3 - no ship building
             {id: "P-ZLKBPD54FM8", minimumShipPriority: 100}, // ExII-Base4 - no ship building
             {id: "P-ZF2GU2MGRWG", minimumShipPriority: 100}, // Ap58 - new - Explorer / Base
+            {id: "P-ZE8TH46FVK0", minimumShipPriority: 100}, // Ap54 - explorers only
+            {id: "P-Z142YAEQFO0", minimumShipPriority: 100}, // Ap55 - explorers only
 
         ]
     },
