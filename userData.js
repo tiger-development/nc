@@ -4,7 +4,8 @@ let userDataStore = []
 
 let planetPriorityDataStore = [
     {user: "miniature-tiger", planets: ["P-Z6NP7GS7LN4", "P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-ZUEF2H4ZVFK", "P-ZQ007X20RGG", "P-ZNZDJF1HE9C", "P-Z9MXBBN13RK", "P-Z8KKOX2ZOQO", "P-Z7M914SV034", "P-ZSHCI4Y9BBK", "P-ZG8IDE649Q8", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
-    {user: "tiger-zaps", planets: ["P-ZF2GU2MGRWG", "P-ZS3RWN9D840", "P-ZXPZG03WPXC", "P-ZZA367LJYRK", "P-ZSJR1UCWGJK", "P-ZL1K8I8Y86O", "P-Z2A6EKIIC00", "P-ZKNJOCNKC0W", "P-Z142YAEQFO0", "P-ZE8TH46FVK0"], planetNames: []},
+    {user: "tiger-zaps", planets: ["P-ZT1CJ3ZM6R4", "P-ZKNJOCNKC0W", "P-Z142YAEQFO0", "P-ZE8TH46FVK0"], planetNames: []},
+    //"P-ZF2GU2MGRWG", "P-ZS3RWN9D840", "P-ZXPZG03WPXC", "P-ZZA367LJYRK", "P-ZSJR1UCWGJK", "P-ZL1K8I8Y86O", "P-Z2A6EKIIC00",
 ]
 
 // minimumShipPriority: 80 is ship2, transportship2: 91, dreadnought2: 92, explorer2: 99
