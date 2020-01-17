@@ -8,6 +8,9 @@ window.addEventListener('load', async (event) => {
     // Temp
     console.log(window.steem_keychain)
 
+    // Get status output
+    const status = document.getElementById('status');
+
     // Get the username input field
     const usernameSelect = document.getElementById('usernameSelect');
 
@@ -17,9 +20,6 @@ window.addEventListener('load', async (event) => {
     // Get logout button
     const logoutButton = document.getElementById('logout');
 
-    // Get status output
-    const status = document.getElementById('status');
-
     // Get mission buttons
     const runLoginMissionButton = document.getElementById('runLoginMission');
     const runInfoMissionButton = document.getElementById('runInfoMission');
@@ -27,6 +27,9 @@ window.addEventListener('load', async (event) => {
     var loginMissionSelect = document.getElementById("loginMissionSelect")
     var infoMissionSelect = document.getElementById("infoMissionSelect")
 
+    // Other data inputs
+    const xCoordinateField = document.getElementById("xCoordinate")
+    const yCoordinateField = document.getElementById("yCoordinate")
     const maxProcessField = document.getElementById("numberOfTransactions")
     const explorerRangeField = document.getElementById("explorerRange")
 
@@ -120,9 +123,11 @@ window.addEventListener('load', async (event) => {
         const mission = loginMissionSelect.value;
         const maxProcess = maxProcessField.value;
         const explorerRange = explorerRangeField.value;
+        const xCoordinate = xCoordinateField.value;
+        const yCoordinate = yCoordinateField.value;
 
         if (user && logInStatus == "keychain") {
-            runLoginMission(user, userData, mission, maxProcess, explorerRange, outputNode);
+            runLoginMission(user, userData, mission, maxProcess, explorerRange, xCoordinate, yCoordinate, outputNode);
         } else {
             console.log('User not logged in with keychain.');
         }
@@ -134,9 +139,11 @@ window.addEventListener('load', async (event) => {
 
         const mission = infoMissionSelect.value;
         const explorerRange = explorerRangeField.value;
+        const xCoordinate = xCoordinateField.value;
+        const yCoordinate = yCoordinateField.value;
 
         if (user && (logInStatus == "setForInfo" || logInStatus == "keychain")) {
-            runInfoMission(user, userData, mission, explorerRange, outputNode);
+            runInfoMission(user, userData, mission, explorerRange, xCoordinate, yCoordinate, outputNode);
         } else {
             console.log('User not logged in for info.');
         }
@@ -212,7 +219,7 @@ let workFlowMonitor = true
 
 
 
-async function runLoginMission(user, userData, mission, maxProcess, explorerRange, outputNode) {
+async function runLoginMission(user, userData, mission, maxProcess, explorerRange, xCoordinate, yCoordinate, outputNode) {
     outputNode.innerHTML = "";
     missionLaunchTime = Date.now();
 
@@ -235,6 +242,10 @@ async function runLoginMission(user, userData, mission, maxProcess, explorerRang
         console.log("runLoginMission - send explorers")
         let explorationTransactions = await findExplorationTransactions(user, userData, explorerRange, outputNode)
         processKeychainTransactions(user, explorationTransactions, maxProcess);
+    } else if (mission == "send explorerII") {
+        console.log("runLoginMission - send explorerII")
+        let explorationTransactions = await findExplorerTwoTransactions(user, userData, explorerRange, xCoordinate, yCoordinate, outputNode)
+        processKeychainTransactions(user, explorationTransactions, maxProcess);
     } else if (mission == "sell ships") {
         console.log("runLoginMission - sell ships")
         let askTransactions = await findMarketTrades(user, userData, outputNode)
@@ -242,7 +253,7 @@ async function runLoginMission(user, userData, mission, maxProcess, explorerRang
     }
 }
 
-async function runInfoMission(user, userData, mission, explorerRange, outputNode) {
+async function runInfoMission(user, userData, mission, explorerRange, xCoordinate, yCoordinate, outputNode) {
     outputNode.innerHTML = "";
     missionLaunchTime = Date.now();
 
@@ -259,7 +270,7 @@ async function runInfoMission(user, userData, mission, explorerRange, outputNode
     } else if (mission == "send explorers") {
         let explorationTransactions = await findExplorationTransactions(user, userData, explorerRange, outputNode)
     } else if (mission == "explorerII scoping") {
-        let explorationTwoTransactions = await findExplorerTwoTransactions(user, userData, explorerRange, outputNode)
+        let explorationTwoTransactions = await findExplorerTwoTransactions(user, userData, explorerRange, xCoordinate, yCoordinate, outputNode)
     } else if (mission == "define strategy") {
         await defineStrategy(user, outputNode)
     }
@@ -893,17 +904,26 @@ async function findShipsToBuild(user, userData, outputNode) {
 }
 
 
-async function findExplorerTwoTransactions(user, userData, explorerRange, outputNode) {
+async function findExplorerTwoTransactions(user, userData, explorerRange, xCoordinate, yCoordinate, outputNode) {
+    let closeHour = 0;
+    let reopenHour = 7;
 
     let planetFleetInfo = [];
     let planetMissionInfo = [];
     //let planetUserMissions = [];
+    let space = [];
+    let proposedExplorations = [];
+    let explorationTransactions = [];
+    let userAvailableMissions = 0;
 
-    let userMissions = await getLimitedUserMissions(user, 100)
+
+    let userMissions = await getLimitedUserMissions(user, 400)
     //let finishedMissions = await getUserMissions(user, 0)
     //let userMissions = activeMissions.concat(finishedMissions)
 
-    console.dir(userMissions)
+    //console.log(xCoordinate)
+    //console.log(yCoordinate)
+    //console.dir(userMissions)
     //console.dir(finishedMissions)
     //console.dir(userMissions)
     //for (const mission of userMissions) {
@@ -915,9 +935,23 @@ async function findExplorerTwoTransactions(user, userData, explorerRange, output
 
     //}
 
+    galaxyData = await getGalaxy(xCoordinate, yCoordinate, explorerRange, explorerRange);
+    console.dir(galaxyData)
+
+    let xmin = galaxyData.area.xmin;
+    let xmax = galaxyData.area.xmax;
+    let ymin = galaxyData.area.ymin;
+    let ymax = galaxyData.area.ymax;
+
+
+
+
+
+
     let i=0;
     let dataPlanets = await getPlanetsOfUser(user);
     for (const dataPlanet of dataPlanets.planets) {
+        space[i] = [];
 
         let planetUserMissions = userMissions.filter(mission => mission.from_planet.id == dataPlanet.id)
         let planetExplorerTwoMissions = planetUserMissions.filter(mission => Object.keys(mission.ships).includes("explorership1"))
@@ -929,16 +963,19 @@ async function findExplorerTwoTransactions(user, userData, explorerRange, output
             explorersAvailable = planetFleetInfo[i][explorerFleetIndex].quantity;
         }
 
+        if (i==0) {
+            planetMissionInfo[i] = await getPlanetMissionInfo(user, dataPlanet.id);
+            userAvailableMissions = planetMissionInfo[i].user_unused;
+            outputNode.innerHTML += "<br>";
+            outputNode.innerHTML += user + " available missions: " + userAvailableMissions + "<br>";
+        }
+
         if (explorersAvailable > 0) {
             planetMissionInfo[i] = await getPlanetMissionInfo(user, dataPlanet.id);
             let availableMissions = planetMissionInfo[i].planet_unused;
             let availableExplorerMissions = Math.min(availableMissions, explorersAvailable);
 
-            if (i==0) {
-                userAvailableMissions = planetMissionInfo[i].user_unused;
-                outputNode.innerHTML += "<br>";
-                outputNode.innerHTML += user + " available missions: " + userAvailableMissions + "<br>";
-            }
+
 
             outputNode.innerHTML += "<br>";
             outputNode.innerHTML += dataPlanet.id + " " + dataPlanet.name + ":<br>";
@@ -955,9 +992,136 @@ async function findExplorerTwoTransactions(user, userData, explorerRange, output
                 }
             }
 
+            for (let x=xmin; x<=xmax; x+=1) {
+                for (let y=ymin; y<=ymax; y+=1) {
+                    let spaceInfo = {x: x, y: y};
+
+                    let planetCoords = [dataPlanet.posx, dataPlanet.posy];
+                    let spaceCoords = [x, y];
+                    spaceInfo["distance"] = distance(planetCoords, spaceCoords);
+
+                    let travelTime = convertDistanceToTimeInSeconds(1, spaceInfo.distance);
+                    spaceInfo["arrival"] = (missionLaunchTime/1000) + travelTime;
+                    spaceInfo["return"] = (missionLaunchTime/1000) + (travelTime * 2);
+                    spaceInfo["returnDate"] = new Date(spaceInfo.return * 1000);
+                    spaceInfo["returnHour"] = spaceInfo.returnDate.getHours();
+
+
+                    let priorTransactionIndex = explorationTransactions.findIndex(entry => entry.x == x && entry.y == y)
+                    spaceInfo["priorTransaction"] = true;
+                    if (priorTransactionIndex == -1) {
+                        spaceInfo["priorTransaction"] = false;
+                    }
+
+                    let planetsIndex = galaxyData.planets.findIndex(entry => entry.x == x && entry.y == y)
+                    spaceInfo["planet"] = true;
+                    if (planetsIndex == -1) {
+                        spaceInfo["planet"] = false;
+                    }
+
+                    let exploredIndex = galaxyData.explored.findIndex(entry => entry.x == x && entry.y == y)
+                    spaceInfo["explored"] = true;
+                    if (exploredIndex == -1) {
+                        spaceInfo["explored"] = false;
+                    }
+
+                    let explorations = galaxyData.explore.filter(entry => entry.x == x && entry.y == y)
+
+                    spaceInfo["underSearch"] = false;
+                    spaceInfo["sniped"] = "none";
+                    if (explorations.length > 0) {
+                        spaceInfo["exploration"] = true;
+
+                        let snipes = [];
+
+                        let k=0;
+                        for (const exploration of explorations) {
+
+
+                            if (exploration.user == user) {
+                                spaceInfo["underSearch"] = true;
+                            } else {
+                                let snipeInfo = {x: x, y: y};
+                                snipeInfo["rivalUser"] = exploration.user;
+                                snipeInfo["rivalArrival"] = exploration.date;
+                                snipeInfo["userArrival"] = spaceInfo.arrival;
+                                snipeInfo["winner"] = "user";
+                                if (snipeInfo.rivalArrival < snipeInfo.userArrival) {
+                                    snipeInfo["winner"] = "rival"
+                                    spaceInfo["sniped"] = "lost";
+                                } else if (snipeInfo.rivalArrival >= snipeInfo.userArrival && spaceInfo["sniped"] != "lost") {
+                                    spaceInfo["sniped"] = "opportunity";
+                                }
+                                snipes.push(snipeInfo)
+                            }
+
+
+                        //let spaceCoords = [mission.end_x, mission.end_y]
+                        //let missionDistance = distance(planetCoords, spaceCoords)
+
+                            k+=1;
+                        }
+                        if (snipes.length > 0) {
+                            //console.dir(snipes)
+                            //console.dir(spaceInfo)
+                        }
+
+                    } else {
+                        spaceInfo["exploration"] = false;
+                    }
+
+                    //console.log(spaceInfo)
+                    space[i].push(spaceInfo)
+                }
+            }
+
+            proposedExplorations[i] = space[i].filter(space => space.explored == false);
+            //console.log(proposedExplorations[i])
+            proposedExplorations[i] = proposedExplorations[i].filter(space => space.priorTransaction == false);
+            //console.log(proposedExplorations[i])
+            proposedExplorations[i] = proposedExplorations[i].filter(space => space.underSearch == false);
+            proposedExplorations[i] = proposedExplorations[i].filter(space => space.sniped != "lost");
+            proposedExplorations[i] = proposedExplorations[i].filter(space => space.returnHour > reopenHour);
+            //console.log(proposedExplorations[i])
+            proposedExplorations[i] = proposedExplorations[i].filter(space => space.planet == false);
+            //console.log(proposedExplorations[i])
+            //proposedExplorations[i].sort((a, b) => a.distance - b.distance);
+            //console.log(proposedExplorations[i])
+            snipeOpportunities = proposedExplorations[i].filter(space => space.sniped == "opportunity");
+            snipeOpportunities = snipeOpportunities.slice(0, availableExplorerMissions);
+
+            nonSnipeExplorations = proposedExplorations[i].filter(space => space.sniped == "none");
+            nonSnipeExplorations = nonSnipeExplorations.slice(0, availableExplorerMissions - snipeOpportunities.length);
+            //proposedExplorations[i] = proposedExplorations[i].slice(0, availableExplorerMissions);
+            //console.log(proposedExplorations[i])
+            proposedExplorations[i] = snipeOpportunities.concat(nonSnipeExplorations);
+
+            for (const proposal of proposedExplorations[i]) {
+                let exploration = {};
+                exploration.type = "explorespace";
+                exploration.planetId = dataPlanet.id;
+                exploration.x = proposal.x;
+                exploration.y = proposal.y;
+                exploration.shipName = "explorership1";
+                exploration.sniped = proposal.sniped;
+                if (proposal.sniped == "opportunity") {
+                    let opportunityCount = explorationTransactions.filter(transaction => transaction.sniped == "opportunity").length;
+                    explorationTransactions.splice(opportunityCount, 0, exploration);
+                    outputNode.innerHTML += exploration.type + " " + exploration.x + " " + exploration.y + " " + exploration.shipName + " " + proposal.distance + " --- SNIPE HAS PRIORITY OVER PLANET ORDER --- <br>";
+                } else {
+                    explorationTransactions.push(exploration);
+                    outputNode.innerHTML += exploration.type + " " + exploration.x + " " + exploration.y + " " + exploration.shipName + " " + proposal.distance + "<br>";
+                }
+            }
+
         }
         i+=1;
     }
+    console.log("explorationTransactions", explorationTransactions)
+    let finalExplorationTransactions = explorationTransactions.slice(0, userAvailableMissions);
+    console.dir(finalExplorationTransactions);
+    return finalExplorationTransactions;
+
 
 }
 
@@ -1170,7 +1334,7 @@ async function findExplorationTransactions(user, userData, explorerRange, output
         i+=1;
     }
 
-    finalExplorationTransactions = explorationTransactions.slice(0, userAvailableMissions);
+    let finalExplorationTransactions = explorationTransactions.slice(0, userAvailableMissions);
     console.dir(finalExplorationTransactions);
     return finalExplorationTransactions;
 
