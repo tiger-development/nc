@@ -970,16 +970,16 @@ async function findExplorerTwoTransactions(user, userData, explorerRange, xCoord
             outputNode.innerHTML += user + " available missions: " + userAvailableMissions + "<br>";
         }
 
+        if (explorersAvailable > 0 || planetExplorerTwoMissions.length > 0) {
+            outputNode.innerHTML += "<br>";
+            outputNode.innerHTML += dataPlanet.id + " " + dataPlanet.name + ":<br>";
+            outputNode.innerHTML += "available missions: " + availableMissions + " available explorers: " + explorersAvailable + ".<br>";
+        }
+
         if (explorersAvailable > 0) {
             planetMissionInfo[i] = await getPlanetMissionInfo(user, dataPlanet.id);
             let availableMissions = planetMissionInfo[i].planet_unused;
             let availableExplorerMissions = Math.min(availableMissions, explorersAvailable);
-
-
-
-            outputNode.innerHTML += "<br>";
-            outputNode.innerHTML += dataPlanet.id + " " + dataPlanet.name + ":<br>";
-            outputNode.innerHTML += "available missions: " + availableMissions + " available explorers: " + explorersAvailable + ".<br>";
 
             if (planetExplorerTwoMissions.length > 0) {
                 outputNode.innerHTML += "recent ExplorerII missions:<br>";
