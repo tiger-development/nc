@@ -946,7 +946,7 @@ async function findExplorerTwoTransactions(user, userData, explorerRange, xCoord
 
 
 
-
+    let availableExplorerMissions = 0;
 
     let i=0;
     let dataPlanets = await getPlanetsOfUser(user);
@@ -975,7 +975,7 @@ async function findExplorerTwoTransactions(user, userData, explorerRange, xCoord
                 planetMissionInfo[i] = await getPlanetMissionInfo(user, dataPlanet.id);
             }
             let availableMissions = planetMissionInfo[i].planet_unused;
-            let availableExplorerMissions = Math.min(availableMissions, explorersAvailable);
+            availableExplorerMissions = Math.min(availableMissions, explorersAvailable);
             outputNode.innerHTML += "<br>";
             outputNode.innerHTML += dataPlanet.id + " " + dataPlanet.name + ":<br>";
             outputNode.innerHTML += "available missions: " + availableMissions + " available explorers: " + explorersAvailable + ".<br>";
