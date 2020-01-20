@@ -3,7 +3,7 @@ let userList = ["miniature-tiger", "tiger-zaps"]
 let userDataStore = []
 
 let planetPriorityDataStore = [
-    {user: "miniature-tiger", planets: ["P-Z6CUYXXSSB4","P-ZN75ISQUAPS", "P-ZTAF77DLPMO", "P-ZAQ7HF0GG00", "P-ZQO2CAQAPDS", "P-ZFARKE21180", "P-ZTYHGPLTDXC", "P-Z6NP7GS7LN4", "P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-ZUEF2H4ZVFK", "P-ZDTN5L88VBK", "P-Z32XHV5Q8IO", "P-ZWGG4451SJ4", "P-ZQ007X20RGG", "P-ZNZDJF1HE9C", "P-Z9MXBBN13RK", "P-Z8KKOX2ZOQO", "P-Z7M914SV034", "P-ZSHCI4Y9BBK", "P-ZG8IDE649Q8", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
+    {user: "miniature-tiger", planets: ["P-ZGJ95KHRNJ4", "P-ZHS6NCDEXZ4", "P-Z6CUYXXSSB4","P-ZN75ISQUAPS", "P-ZTAF77DLPMO", "P-ZAQ7HF0GG00", "P-ZQO2CAQAPDS", "P-ZFARKE21180", "P-ZTYHGPLTDXC", "P-Z6NP7GS7LN4", "P-Z3STEWYEMDC", "P-ZJWCQN4SU00", "P-ZUEF2H4ZVFK", "P-ZDTN5L88VBK", "P-Z32XHV5Q8IO", "P-ZWGG4451SJ4", "P-ZQ007X20RGG", "P-ZNZDJF1HE9C", "P-Z9MXBBN13RK", "P-Z8KKOX2ZOQO", "P-Z7M914SV034", "P-ZSHCI4Y9BBK", "P-ZG8IDE649Q8", "P-Z9C2P737XQ8", "P-Z0OXZ5QK3GG"], planetNames: []},
     {user: "tiger-zaps", planets: ["P-ZPYNKUAGBPC", "P-Z9FUOBRVDWG", "P-ZT1CJ3ZM6R4", "P-Z142YAEQFO0", "P-ZE8TH46FVK0"], planetNames: []},
     //"P-ZF2GU2MGRWG", "P-ZS3RWN9D840", "P-ZXPZG03WPXC", "P-ZZA367LJYRK", "P-ZSJR1UCWGJK", "P-ZL1K8I8Y86O", "P-Z2A6EKIIC00",
 ]
@@ -54,19 +54,19 @@ let doNotBuildDataStore = [
 ]
 
 let shipMarket = [
-    {type: "corvette", version: 0, minPrice: 15},
+    {type: "corvette", version: 0, minPrice: 10},
     {type: "frigate", version: 0, minPrice: 20},
-    {type: "destroyer", version: 0, minPrice: 35},
+    {type: "destroyer", version: 0, minPrice: 30},
     {type: "cruiser", version: 0, minPrice: 40},
     {type: "battlecruiser", version: 0, minPrice: 100},
     {type: "carrier", version: 0, minPrice: 300},
-    {type: "dreadnought", version: 0, minPrice: 795},
+    {type: "dreadnought", version: 0, minPrice: 800},
     {type: "cutter2", version: 2, minPrice: 20},
-    {type: "corvette2", version: 2, minPrice: 70},
-    {type: "frigate2", version: 2, minPrice: 100},
-    {type: "destroyer2", version: 2, minPrice: 160},
-    {type: "cruiser2", version: 2, minPrice: 300},
-    {type: "battlecruiser2", version: 2, minPrice: 580},
+    {type: "corvette2", version: 2, minPrice: 40},
+    {type: "frigate2", version: 2, minPrice: 70},
+    {type: "destroyer2", version: 2, minPrice: 140},
+    {type: "cruiser2", version: 2, minPrice: 200},
+    {type: "battlecruiser2", version: 2, minPrice: 500},
     {type: "carrier2", version: 2, minPrice: 5000},
     //{type: "dreadnought2", version: 2, minPrice: 9000}
 ];

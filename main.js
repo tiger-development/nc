@@ -588,6 +588,10 @@ async function shipsToUpgradeForPlanet(planetId, resources, shipyard, shipPriori
               shipInfo.planetId = planetId
               shipInfo.name = ship.type
               shipsToUpgrade.push(shipInfo);
+         } else {
+              // Do not build any ships if cannot build
+              console.log(planetId + " not enough resources to build " + ship.type)
+              break
          }
 
     }
