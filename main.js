@@ -325,7 +325,7 @@ async function snipes(user, outputNode) {
                     outputNode.innerHTML += "explorer cancelled: " + explorer.user + "<br>"
                 } else {
                     let arrival = new Date(explorer.date * 1000)
-                    let timeRemaining = arrival - launchTime
+                    let timeRemaining = arrival - missionLaunchTime
                     outputNode.innerHTML += "explorer: " + explorer.user + " : " + arrival + "<br>"
                     let convertedTime = convertToHoursMinutes(timeRemaining)
                     outputNode.innerHTML += "time remaining: " + convertedTime[0] + "h " + convertedTime[1] + "m <br>"
@@ -418,8 +418,8 @@ async function checkPotentialForAttack(target, outputNode) {
         outputNode.innerHTML += planet.id + " : " + planet.name + "<br>"
         outputNode.innerHTML += "Resources -> coal:" + planetResources[i].coal + " ore:" + planetResources[i].ore + " copper:" + planetResources[i].copper + " uranium:" + planetResources[i].uranium + "<br>";
         outputNode.innerHTML += "Depots -> coal:" + planetData[i].coaldepot + " ore:" + planetData[i].oredepot + " copper:" + planetData[i].copperdepot + " uranium:" + planetData[i].uraniumdepot + "<br>";
-        outputNode.innerHTML += "Shield charge:" + ((planetInfo[i].shieldcharge_busy - launchTime/1000) / 3600) + " Shield charged:" + planetInfo[i].shieldcharged + " Shield protection:" + ((planetInfo[i].shieldprotection_busy - launchTime/1000)/ 3600) + "<br>";
-        console.log(planetInfo[i].shieldcharge_busy, planetInfo[i].shieldprotection, launchTime)
+        outputNode.innerHTML += "Shield charge:" + ((planetInfo[i].shieldcharge_busy - missionLaunchTime/1000) / 3600) + " Shield charged:" + planetInfo[i].shieldcharged + " Shield protection:" + ((planetInfo[i].shieldprotection_busy - missionLaunchTime/1000)/ 3600) + "<br>";
+        console.log(planetInfo[i].shieldcharge_busy, planetInfo[i].shieldprotection, missionLaunchTime)
         i += 1
     }
 }
@@ -530,7 +530,7 @@ function timeTranslation(time) {
 }
 
 async function calculateCurrentResources(planet) {
-  let timeSinceUpdate = ((launchTime - planet.lastUpdate * 1000) / 3600 / 1000);
+  let timeSinceUpdate = ((missionLaunchTime - planet.lastUpdate * 1000) / 3600 / 1000);
 
   let coal = Math.min(updateResource(planet.coal, planet.coalrate, timeSinceUpdate), planet.coaldepot)
   let ore = Math.min(updateResource(planet.ore, planet.orerate, timeSinceUpdate), planet.oredepot)
@@ -571,7 +571,7 @@ async function shipsToUpgradeForPlanet(planetId, resources, shipyard, shipPriori
 
     let shipyardWithSkills = shipyardWithPriority.filter(ship => shipHasSkills(ship) === true)
 
-    let shipyardAvailableToBuild = shipyardWithSkills.filter(ship => shipbuildingBusy(launchTime, ship.busy_until) === false);
+    let shipyardAvailableToBuild = shipyardWithSkills.filter(ship => shipbuildingBusy(missionLaunchTime, ship.busy_until) === false);
 
     shipyardAvailableToBuild.sort((a, b) => b.priority - a.priority);
     //console.dir(shipyardAvailableToBuild)
@@ -615,7 +615,7 @@ async function buildingsToUpgradeForPlanet(planetId, resources, buildings, minim
         if (sufficient == true) {
             //console.log(remainingResources)
             // Check if building already being updated
-            let busy = checkIfBuildingBusy(launchTime, building.busy)
+            let busy = checkIfBuildingBusy(missionLaunchTime, building.busy)
 
             // Check if skill level greater than current level
             let nextSkill = checkIfNextSkillCompleted(building.current, building.skill)
@@ -1401,7 +1401,7 @@ async function findMarketTrades(user, userData, outputNode) {
         // Filter out ships already sold
         planetShipsForMarket = planetShipsForMarket.filter(ship => ship.for_sale == 0);
         // Filter out ships on missions
-        planetShipsForMarket = planetShipsForMarket.filter(ship => ship.busy < launchTime/1000);
+        planetShipsForMarket = planetShipsForMarket.filter(ship => ship.busy < missionLaunchTime/1000);
         // Crop ships to useful info only, including ship version tyep
         planetShipsForMarket = planetShipsForMarket.map(ship => ({type: ship.type, id: ship.id, planet: planet.id, version: shipMarket[findIndexInShipMarket(ship.type)].version}))
         //usefulShips = usefulShips.map(ship => ({...ship, priority: shipPriority[ship.type]}))
