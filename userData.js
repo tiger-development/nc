@@ -49,7 +49,7 @@ let doNotBuildDataStore = [
     },
     {user: "tiger-zaps", planets:
         // Delta, Pi, Kappa, ExII-Factory1, Ap-54, Ap-55
-        ["P-ZY9Q75PXWWW", "P-Z8JQAIQIU3K", "P-ZAF8WG5WM00", "P-ZR10UOAG7TS", "P-ZE8TH46FVK0", "P-Z142YAEQFO0"]
+        ["P-ZY9Q75PXWWW", "P-Z8JQAIQIU3K", "P-ZAF8WG5WM00", "P-ZR10UOAG7TS"]
     },
 ]
 

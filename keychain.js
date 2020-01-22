@@ -79,7 +79,7 @@ function exploreSpace(user, planetId, x, y, shipName) {
     keychainCustomJson(user, 'nextcolony', 'Posting', finalJson, 'displayName')
 }
 
-function processKeychainTransactions(user, transactions, maxProcess) {
+function processKeychainTransactions(user, transactions, maxProcess, waitTime) {
 
     let transactionsToProcess = Math.min(maxProcess, transactions.length)
 
@@ -108,7 +108,7 @@ function processKeychainTransactions(user, transactions, maxProcess) {
 
 
         if (transactionsToProcess > 0) {
-            setTimeout(processKeychainTransactionWithDelay, 1000);
+            setTimeout(processKeychainTransactionWithDelay, waitTime);
         } else {
             console.log("Transactions complete")
         }

@@ -229,26 +229,26 @@ async function runLoginMission(user, userData, mission, maxProcess, explorerRang
         console.log("runLoginMission - build ships")
         //buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
         let buildShipTransactions = await findShipsToBuild(user, userData, outputNode)
-        processKeychainTransactions(user, buildShipTransactions, maxProcess);
+        processKeychainTransactions(user, buildShipTransactions, maxProcess, 500);
 
     } else if (mission == "upgrade buildings") {
         console.log("runLoginMission - upgrade buildings")
         let buildingsTransactions = await findBuildingsToUpgrade(user, userData, outputNode)
         //upgradeBuilding(user, "P-Z142YAEQFO0", "shieldgenerator")
-        processKeychainTransactions(user, buildingsTransactions, maxProcess);
+        processKeychainTransactions(user, buildingsTransactions, maxProcess, 500);
         // buildShip(user, "P-ZCBO9MBOJ2O", "corvette")
         //upgradeBuilding(user, planetId, buildingName)
     } else if (mission == "send explorers") {
         console.log("runLoginMission - send explorers")
         let explorationTransactions = await findExplorationTransactions(user, userData, explorerRange, outputNode)
-        processKeychainTransactions(user, explorationTransactions, maxProcess);
+        processKeychainTransactions(user, explorationTransactions, maxProcess, 3000);
     } else if (mission == "send explorerII") {
         console.log("runLoginMission - send explorerII")
         let explorationTransactions = await findExplorerTwoTransactions(user, userData, explorerRange, xCoordinate, yCoordinate, outputNode)
-        processKeychainTransactions(user, explorationTransactions, maxProcess);
+        processKeychainTransactions(user, explorationTransactions, maxProcess, 3000);
     } else if (mission == "sell ships") {
         console.log("runLoginMission - sell ships")
-        let askTransactions = await findMarketTrades(user, userData, outputNode)
+        let askTransactions = await findMarketTrades(user, userData, outputNode, 500)
         processKeychainTransactions(user, askTransactions, maxProcess);
     }
 }
