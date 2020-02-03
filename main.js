@@ -248,8 +248,8 @@ async function runLoginMission(user, userData, mission, maxProcess, explorerRang
         processKeychainTransactions(user, explorationTransactions, maxProcess, 3000);
     } else if (mission == "sell ships") {
         console.log("runLoginMission - sell ships")
-        let askTransactions = await findMarketTrades(user, userData, outputNode, 500)
-        processKeychainTransactions(user, askTransactions, maxProcess);
+        let askTransactions = await findMarketTrades(user, userData, outputNode)
+        processKeychainTransactions(user, askTransactions, maxProcess, 500);
     }
 }
 
