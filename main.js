@@ -1424,7 +1424,7 @@ async function findMarketTrades(user, userData, outputNode) {
     //console.dir(userVersionTwoShips)
     console.dir(userAllShipsForSale)
 
-    let marketAsksDesiredPerShipType = 20;
+    let marketAsksDesiredPerShipType = 40;
 
     let j=0
     for (const ship of shipMarket) {
