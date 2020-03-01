@@ -425,7 +425,7 @@ async function checkPotentialForAttack(target, outputNode) {
 }
 
 async function getPlanetsOfUser(user) {
-    let response = await fetch("https://api.nextcolony.io/loadplanets?user=" + user);
+    let response = await fetch("https://api.nextcolony.io/loadplanets?user=" + user + "&from=0&to=10000&sort=date");
     let data = await response.json();
     return data
 }
